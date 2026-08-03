@@ -1,4 +1,6 @@
 {
+  "name": "bskythreadwatcher",
+  "license": "MIT",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
