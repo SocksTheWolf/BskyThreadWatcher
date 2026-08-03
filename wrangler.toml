@@ -8,11 +8,14 @@ workers_dev = false
 preview_urls = false
 send_metrics = false
 
+# mirror of file data
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "onlyuppies"
 remote = true
 
+# used for bookkeeping records
+# like which posts we've seen
 [[kv_namespaces]]
 binding = "KV"
 id = "743e785ed53f49cca04b90f105c0b84e"
@@ -24,9 +27,11 @@ crons = ["0 */1 * * *"] # run at every hour on the hour
 enabled = true
 head_sampling_rate = 1
 
+# no webhook = no maidens
 [secrets]
 required=["WEBHOOK"]
 
+# closest to microcosm data
 [placement]
 region = "gcp:northamerica-northeast2-a"
 
