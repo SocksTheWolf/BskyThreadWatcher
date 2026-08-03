@@ -27,7 +27,6 @@ head_sampling_rate = 1
 required=["WEBHOOK"]
 
 [placement]
-mode = "smart"
 region = "gcp:northamerica-northeast2-a"
 
 [vars]
