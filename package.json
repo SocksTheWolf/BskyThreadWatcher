@@ -16,5 +16,10 @@
     "mime": "^4.1.0",
     "minimal-discord-webhook-node": "^1.0.1",
     "uuid": "^14.0.1"
+  },
+  "overrides": {
+    "wrangler": {
+      "undici": "latest"
+    }
   }
 }
