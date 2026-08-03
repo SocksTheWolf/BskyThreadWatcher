@@ -82,8 +82,8 @@ export default {
                     const blob: Blob<string> = embedData.image as Blob<string>;
                     const blobID: string = (blob.ref as CidLink).$link;
                     const mimeType: string = embedData.image.mimeType;
-                    await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio);
-                    ++count;
+                    if (await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio))
+                      ++count;
                  }
               // Copy any external thumbnails and save those too
               } else if (mediaType === "app.bsky.embed.external") {
@@ -120,12 +120,12 @@ export default {
         console.log("detected no changes in record");
       }
     } else {
-      console.warn(`Unable to get current bsky records, got return of ${allRecords.statusText}`);
+      console.warn(`Unable to get current bsky records, got return of "${allRecords.statusText}"`);
     }
   }
 };
 
-async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, aspectRatio:ImgAspectRatio|undefined=undefined) {
+async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean> {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;
   // Try to load it into memory
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
@@ -135,5 +135,9 @@ async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeTy
       customMetadata: {"user": user, "type": mimeType,
         "width": (aspectRatio?.width || 0).toString(), "height": (aspectRatio?.height || 0).toString()}
     });
+    return true;
+  } else {
+    console.warn(`unable to save blob from user ${user} got error "${bigBlobRush.statusText}"`);
+    return false;
   }
 }
