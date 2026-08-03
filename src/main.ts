@@ -103,7 +103,11 @@ export default {
         } else {
           console.log("NO RECORDS EXIST, LMAO");
         }
+      } else {
+        console.log("detected no changes in record");
       }
+    } else {
+      console.warn(`Unable to get current bsky records, got return of ${allRecords.statusText}`);
     }
   }
 };
