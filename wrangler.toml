@@ -2,7 +2,7 @@ name = "onlyuppieswatcher"
 main = "src/main.ts"
 compatibility_date = "2026-08-02"
 minify = true
-compatibility_flags = [ "nodejs_compat"]
+compatibility_flags = ["nodejs_compat"]
 upload_source_maps = true
 workers_dev = false
 preview_urls = false
@@ -11,6 +11,7 @@ send_metrics = false
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "onlyuppies"
+remote = true
 
 [[kv_namespaces]]
 binding = "KV"

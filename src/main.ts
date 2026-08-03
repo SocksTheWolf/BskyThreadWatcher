@@ -1,6 +1,9 @@
 import type { AppBskyEmbedExternal, AppBskyEmbedGallery, AppBskyEmbedImages, AppBskyFeedPost } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
+import { v4 as uuidv4 } from 'uuid';
 import isEmpty from "just-is-empty";
+// @ts-ignore
+import * as mime from "mime-types";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 
@@ -123,12 +126,12 @@ export default {
 };
 
 async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, aspectRatio:ImgAspectRatio|undefined=undefined) {
-  const blobURL: string = `https://cdn.bsky.app/img/feed_fullsize/plain/${user}/${blobID}`;
+  const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;
   // Try to load it into memory
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
   if (bigBlobRush.ok) {
     // dump it on R2
-    await env.R2.put(`${user}-${(Math.random() * 1000).toString()}`, await bigBlobRush.blob(), {
+    await env.R2.put(`${user}/${uuidv4()}.${mime.extension(mimeType)}`, await bigBlobRush.blob(), {
       customMetadata: {"user": user, "type": mimeType,
         "width": (aspectRatio?.width || 0).toString(), "height": (aspectRatio?.height || 0).toString()}
     });
