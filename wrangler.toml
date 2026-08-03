@@ -1,0 +1,25 @@
+name = "onlyuppieswatcher"
+main = "src/main.ts"
+compatibility_date = "2026-08-02"
+minify = true
+compatibility_flags = [ "nodejs_compat"]
+upload_source_maps = true
+preview_urls = false
+send_metrics = false
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "onlyuppies"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "743e785ed53f49cca04b90f105c0b84e"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[secrets]
+required=["WEBHOOK"]
+
+[vars]
+TARGET="at://did:plc:7r2p2whijcpzawoe24gsvbsu/app.bsky.feed.post/3ms5phvkz7c2n"

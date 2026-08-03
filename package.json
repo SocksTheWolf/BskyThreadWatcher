@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types src/wrangler.d.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "wrangler": "^4.118.0"
+  },
+  "dependencies": {
+    "minimal-discord-webhook-node": "^1.0.1"
+  }
+}
