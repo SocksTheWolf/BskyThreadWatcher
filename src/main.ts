@@ -1,3 +1,6 @@
+import type { AppBskyEmbedExternal, AppBskyEmbedGallery, AppBskyEmbedImages, AppBskyFeedPost } from "@atcute/bluesky";
+import type { Blob, CidLink } from "@atcute/lexicons";
+// @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 
 export default {
@@ -8,6 +11,11 @@ export default {
     return new Response("Hello");
   },
   async scheduled(event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
+    // @ts-ignore
+    if (env.CAN_RUN === "false")
+      return;
+
+    const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
     const discordWebhook: Webhook = new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true});
 
     const allRecords = await fetch(`https://constellation.microcosm.blue/links?target=${encodeURIComponent(env.TARGET)}&collection=app.bsky.feed.post&path=.reply.parent.uri`, {
@@ -41,26 +49,45 @@ export default {
             // BIG TIME RUSH FETCH RECORD
             const bskyRecord = await fetch(`https://public.api.bsky.app/xrpc/com.atproto.repo.getRecord?collection=app.bsky.feed.post&repo=${record.did}&rkey=${record.rkey}`);
             if (bskyRecord.ok) {
-              const bskyRecordJson = await bskyRecord.json();
-              const mediaType: string = bskyRecordJson.value.embed.$type;
+              const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json() as any).value;
+              const mediaType: string = bskyRecordJson.embed?.$type || "";
               // Try to grab images
               if (mediaType === "app.bsky.embed.images") {
-                for (const embedData of bskyRecordJson.value.embed.images) {
+                const imgSchema: AppBskyEmbedImages.Main = (bskyRecordJson.embed! as AppBskyEmbedImages.Main);
+                for (const embedData of imgSchema.images) {
                   // Grab a bunch of info for the image
-                  const blobID: string = embedData.image.ref.$link;
+                  const blob: Blob<string> = embedData.image as Blob<string>;
+                  const blobID: string = (blob.ref as CidLink).$link;
                   const mimeType: string = embedData.image.mimeType;
                   await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio);
                 }
+              // Handle Galleries
+              } else if (mediaType === "app.bsky.embed.gallery") {
+                const imgSchema: AppBskyEmbedGallery.Main = (bskyRecordJson.embed! as AppBskyEmbedGallery.Main);
+                let count = 0;
+                 for (const embedData of imgSchema.items) {
+                    // limit to the first couple of images so we do not go crazy
+                    if (count >= maxGalleryImages)
+                      continue;
+                    const blob: Blob<string> = embedData.image as Blob<string>;
+                    const blobID: string = (blob.ref as CidLink).$link;
+                    const mimeType: string = embedData.image.mimeType;
+                    await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio);
+                    ++count;
+                 }
+              // Copy any external thumbnails and save those too
               } else if (mediaType === "app.bsky.embed.external") {
-                const thumbData:any|undefined = bskyRecordJson.value.embed.external.thumb;
+                const externalData: AppBskyEmbedExternal.External = (bskyRecordJson.embed! as unknown as AppBskyEmbedExternal.External);
+                const thumbData: Blob<string>|undefined = externalData.thumb as Blob<string>|undefined;
                 if (thumbData !== undefined) {
                   await parseAndUploadToR2(env, record.did, thumbData.ref.$link, thumbData.mimeType);
                 }
-                // I don't know if it makes sense to error on links with no thumbs...
+              // This is a quote post, just let it go to something...
+              // I don't know if it makes sense to error on links with no thumbs...
               } else if (mediaType === "app.bsky.embed.record") {
                 // Don't do anything here, because we do want to save this record
               } else {
-                console.log("NO IMAGES FOUND, SKIPPING");
+                console.log("NO IMAGE BASED DATA FOUND, SKIPPING");
                 continue;
               }
               // Valid records get stored and pushed to discord

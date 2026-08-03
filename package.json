@@ -1,9 +1,11 @@
 {
   "scripts": {
     "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
     "types": "wrangler types src/wrangler.d.ts"
   },
   "devDependencies": {
+    "@atcute/bluesky": "^4.0.17",
     "@types/node": "^24.13.3",
     "wrangler": "^4.118.0"
   },

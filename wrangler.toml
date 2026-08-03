@@ -4,6 +4,7 @@ compatibility_date = "2026-08-02"
 minify = true
 compatibility_flags = [ "nodejs_compat"]
 upload_source_maps = true
+workers_dev = false
 preview_urls = false
 send_metrics = false
 
@@ -16,10 +17,12 @@ binding = "KV"
 id = "743e785ed53f49cca04b90f105c0b84e"
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["0 */1 * * *"]
 
 [secrets]
 required=["WEBHOOK"]
 
 [vars]
+CAN_RUN="false"
+MAX_GALLERY_IMAGES="4"
 TARGET="at://did:plc:7r2p2whijcpzawoe24gsvbsu/app.bsky.feed.post/3ms5phvkz7c2n"
