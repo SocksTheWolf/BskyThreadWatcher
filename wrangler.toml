@@ -27,6 +27,10 @@ head_sampling_rate = 1
 required=["WEBHOOK"]
 
 [vars]
-CAN_RUN="false"
+# constrain yourself
 MAX_GALLERY_IMAGES="4"
-TARGET="at://did:plc:7r2p2whijcpzawoe24gsvbsu/app.bsky.feed.post/3ms5phvkz7c2n"
+# socksthewolf.com
+SKIP_DID="did:plc:2vueglf2njr5gvdbaf75ih6a"
+# target post on atproto
+# use pdsls.dev to get this link (check info tab)
+TARGET=""

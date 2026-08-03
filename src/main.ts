@@ -1,5 +1,6 @@
 import type { AppBskyEmbedExternal, AppBskyEmbedGallery, AppBskyEmbedImages, AppBskyFeedPost } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
+import isEmpty from "just-is-empty";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 
@@ -11,12 +12,14 @@ export default {
     return new Response("Hello");
   },
   async scheduled(event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
-    // @ts-ignore
-    if (env.CAN_RUN === "false")
+    if (isEmpty(env.TARGET)) {
+      console.warn("The target post url is empty, die.");
       return;
+    }
 
+    const hasWebhook: boolean = !isEmpty(env.WEBHOOK);
     const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
-    const discordWebhook: Webhook = new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true});
+    const discordWebhook: Webhook|null = hasWebhook ? new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
 
     const allRecords = await fetch(`https://constellation.microcosm.blue/links?target=${encodeURIComponent(env.TARGET)}&collection=app.bsky.feed.post&path=.reply.parent.uri`, {
       headers: {"Accept": "application/json"}
@@ -36,6 +39,10 @@ export default {
             return;
           }
           for (const record of jsonInfo.linking_records) {
+            // skip any messages that are written by me
+            if (record.did === env.SKIP_DID)
+              continue;
+
             const recordExists:string|null = await env.KV.get(record.rkey);
             if (recordExists !== null) {
               break;
@@ -92,7 +99,9 @@ export default {
               }
               // Valid records get stored and pushed to discord
               await env.KV.put(record.rkey, fxURL);
-              await discordWebhook.send(fxURL);
+              if (hasWebhook)
+                await discordWebhook.send(fxURL);
+
               console.log(`Successfully processed ${record.rkey}!`);
             } else {
               console.error(`We couldn't fetch the record for ${fxURL}`);
