@@ -93,6 +93,7 @@ export default {
               // Valid records get stored and pushed to discord
               await env.KV.put(record.rkey, fxURL);
               await discordWebhook.send(fxURL);
+              console.log(`Successfully processed ${record.rkey}!`);
             } else {
               console.error(`We couldn't fetch the record for ${fxURL}`);
               continue;
