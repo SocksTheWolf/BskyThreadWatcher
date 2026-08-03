@@ -2,8 +2,7 @@ import type { AppBskyEmbedExternal, AppBskyEmbedGallery, AppBskyEmbedImages, App
 import type { Blob, CidLink } from "@atcute/lexicons";
 import { v4 as uuidv4 } from 'uuid';
 import isEmpty from "just-is-empty";
-// @ts-ignore
-import * as mime from "mime-types";
+import mime from 'mime/lite';
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 
@@ -131,7 +130,7 @@ async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeTy
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
   if (bigBlobRush.ok) {
     // dump it on R2
-    await env.R2.put(`${user}/${uuidv4()}.${mime.extension(mimeType)}`, await bigBlobRush.blob(), {
+    await env.R2.put(`${user}/${uuidv4()}.${mime.getExtension(mimeType)}`, await bigBlobRush.blob(), {
       customMetadata: {"user": user, "type": mimeType,
         "width": (aspectRatio?.width || 0).toString(), "height": (aspectRatio?.height || 0).toString()}
     });

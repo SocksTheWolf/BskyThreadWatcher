@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "just-is-empty": "^3.4.1",
-    "mime-types": "^3.0.2",
+    "mime": "^4.1.0",
     "minimal-discord-webhook-node": "^1.0.1",
     "uuid": "^14.0.1"
   }
