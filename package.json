@@ -19,7 +19,7 @@
   },
   "overrides": {
     "wrangler": {
-      "undici": "latest"
+      "undici": "^7.29.0"
     }
   }
 }
