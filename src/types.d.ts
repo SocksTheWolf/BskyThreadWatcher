@@ -19,4 +19,16 @@ interface LandmarkData {
 interface ImgAspectRatio {
   width: number;
   height: number;
-}
+};
+
+interface CustomR2Metadata extends Record<string, string> {
+  user: string;
+  type: string;
+  width: string;
+  height: string;
+  alt?: string;
+};
+
+interface RawRecord {
+  value: AppBskyFeedPost.Main
+};

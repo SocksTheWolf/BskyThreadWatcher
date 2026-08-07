@@ -13,7 +13,7 @@ export default {
       await this.scheduled(null, env, ctx);
     return new Response("Hello");
   },
-  async scheduled(event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
+  async scheduled(_event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
     if (isEmpty(env.TARGET)) {
       console.warn("The target post url is empty, die.");
       return;
@@ -58,7 +58,7 @@ export default {
             // BIG TIME RUSH FETCH RECORD
             const bskyRecord = await fetch(`https://public.api.bsky.app/xrpc/com.atproto.repo.getRecord?collection=app.bsky.feed.post&repo=${record.did}&rkey=${record.rkey}`);
             if (bskyRecord.ok) {
-              const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json() as any).value;
+              const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json() as RawRecord).value;
               const mediaType: string = bskyRecordJson.embed?.$type || "";
               // Try to grab images
               if (mediaType === "app.bsky.embed.images") {
@@ -68,7 +68,7 @@ export default {
                   const blob: Blob<string> = embedData.image as Blob<string>;
                   const blobID: string = (blob.ref as CidLink).$link;
                   const mimeType: string = embedData.image.mimeType;
-                  await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio);
+                  await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.alt, embedData.aspectRatio);
                 }
               // Handle Galleries
               } else if (mediaType === "app.bsky.embed.gallery") {
@@ -81,7 +81,7 @@ export default {
                     const blob: Blob<string> = embedData.image as Blob<string>;
                     const blobID: string = (blob.ref as CidLink).$link;
                     const mimeType: string = embedData.image.mimeType;
-                    if (await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.aspectRatio))
+                    if (await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.alt, embedData.aspectRatio))
                       ++count;
                  }
               // Copy any external thumbnails and save those too
@@ -102,7 +102,7 @@ export default {
               // Valid records get stored and pushed to discord
               await env.KV.put(record.rkey, fxURL);
               if (hasWebhook)
-                await discordWebhook.send(fxURL);
+                ctx.waitUntil(discordWebhook.send(fxURL));
 
               console.log(`Successfully processed ${record.rkey}!`);
             } else {
@@ -124,15 +124,21 @@ export default {
   }
 };
 
-async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean> {
+async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean> {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;
   // Try to load it into memory
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
   if (bigBlobRush.ok) {
     // dump it on R2
+    const metadataHold: CustomR2Metadata = {
+      "user": user,
+      "type": mimeType,
+      "width": (aspectRatio?.width || 0).toString(),
+      "alt": alt ?? "",
+      "height": (aspectRatio?.height || 0).toString()
+    };
     await env.R2.put(`${user}/${uuidv4()}.${mime.getExtension(mimeType)}`, await bigBlobRush.blob(), {
-      customMetadata: {"user": user, "type": mimeType,
-        "width": (aspectRatio?.width || 0).toString(), "height": (aspectRatio?.height || 0).toString()}
+      customMetadata: metadataHold
     });
     return true;
   } else {
