@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "types": "wrangler types src/wrangler.d.ts"
+    "types": "wrangler types src/wrangler.d.ts",
+    "lint": "eslint"
   },
   "devDependencies": {
     "@atcute/bluesky": "^4.0.17",
@@ -17,6 +18,7 @@
     "wrangler": "^4.119.0"
   },
   "dependencies": {
+    "just-has": "^2.3.0",
     "just-is-empty": "^3.4.1",
     "mime": "^4.1.0",
     "minimal-discord-webhook-node": "^1.0.1",

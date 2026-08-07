@@ -32,3 +32,16 @@ interface CustomR2Metadata extends Record<string, string> {
 interface RawRecord {
   value: AppBskyFeedPost.Main
 };
+
+interface DIDLookupSuccess {
+  id: string;
+  alsoKnownAs: string[];
+  verificationMethod: unknown;
+  serviceMethod: unknown;
+};
+
+interface DIDLookupFailure {
+  message: string;
+};
+
+type DIDLookupResult = DIDLookupFailure|DIDLookupSuccess;

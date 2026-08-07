@@ -1,8 +1,9 @@
 import type { AppBskyEmbedExternal, AppBskyEmbedGallery, AppBskyEmbedImages, AppBskyFeedPost } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
-import { v4 as uuidv4 } from 'uuid';
 import isEmpty from "just-is-empty";
 import mime from 'mime/lite';
+import { v4 as uuidv4 } from 'uuid';
+import has from "just-has";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 
@@ -23,6 +24,7 @@ export default {
     const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
     const discordWebhook: Webhook|null = hasWebhook ? new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
 
+    let newRecords: number;
     const allRecords = await fetch(`https://constellation.microcosm.blue/links?target=${encodeURIComponent(env.TARGET)}&collection=app.bsky.feed.post&path=.reply.parent.uri`, {
       headers: {"Accept": "application/json"}
     });
@@ -34,20 +36,40 @@ export default {
       if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
         // check number of records
         if (jsonInfo.linking_records.length > 0) {
-          const firstRKey:string = jsonInfo.linking_records[0].rkey;
+          const firstRKey: string = jsonInfo.linking_records[0].rkey;
           // check to see if any records are different
           if (previousRecord !== null && firstRKey == previousRecord.last_top_record) {
             console.log("No new changes");
             return;
           }
+          newRecords = (previousRecord?.total ?? 0) +1;
           for (const record of jsonInfo.linking_records) {
             // skip any messages that are written by me
             if (record.did === env.SKIP_DID)
               continue;
 
-            const recordExists:string|null = await env.KV.get(record.rkey);
+            const recordExists: string|null = await env.KV.get(record.rkey);
             if (recordExists !== null) {
               break;
+            }
+
+            // Get the username
+            let username: string = record.did;
+            const usernameFetch = await fetch(`https://plc.directory/${record.did}`);
+            if (usernameFetch.ok) {
+              const rawUserFetch = await usernameFetch.json<DIDLookupResult>();
+              // Unnecessary, but safe anyways.
+              if (!has(rawUserFetch, "message")) {
+                const aliases = (rawUserFetch as DIDLookupSuccess).alsoKnownAs;
+                for (const alias of aliases) {
+                  if (alias.includes("at://")) {
+                    username = alias.replace("at://", "");
+                    break;
+                  }
+                }
+              }
+            } else {
+              console.warn(`Could not resolve username for ${record.did}`);
             }
             // We have never seen this object in our life, ever.
             // I know this, and I love you.
@@ -68,7 +90,7 @@ export default {
                   const blob: Blob<string> = embedData.image as Blob<string>;
                   const blobID: string = (blob.ref as CidLink).$link;
                   const mimeType: string = embedData.image.mimeType;
-                  await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.alt, embedData.aspectRatio);
+                  await parseAndUploadToR2(env, newRecords, username, blobID, mimeType, embedData.alt, embedData.aspectRatio);
                 }
               // Handle Galleries
               } else if (mediaType === "app.bsky.embed.gallery") {
@@ -81,7 +103,7 @@ export default {
                     const blob: Blob<string> = embedData.image as Blob<string>;
                     const blobID: string = (blob.ref as CidLink).$link;
                     const mimeType: string = embedData.image.mimeType;
-                    if (await parseAndUploadToR2(env, record.did, blobID, mimeType, embedData.alt, embedData.aspectRatio))
+                    if (await parseAndUploadToR2(env, newRecords, username, blobID, mimeType, embedData.alt, embedData.aspectRatio))
                       ++count;
                  }
               // Copy any external thumbnails and save those too
@@ -89,7 +111,7 @@ export default {
                 const externalData: AppBskyEmbedExternal.External = (bskyRecordJson.embed! as unknown as AppBskyEmbedExternal.External);
                 const thumbData: Blob<string>|undefined = externalData.thumb as Blob<string>|undefined;
                 if (thumbData !== undefined) {
-                  await parseAndUploadToR2(env, record.did, thumbData.ref.$link, thumbData.mimeType);
+                  await parseAndUploadToR2(env, newRecords, username, thumbData.ref.$link, thumbData.mimeType);
                 }
               // This is a quote post, just let it go to something...
               // I don't know if it makes sense to error on links with no thumbs...
@@ -105,6 +127,7 @@ export default {
                 ctx.waitUntil(discordWebhook.send(fxURL));
 
               console.log(`Successfully processed ${record.rkey}!`);
+              ++newRecords;
             } else {
               console.error(`We couldn't fetch the record for ${fxURL}`);
               continue;
@@ -124,7 +147,7 @@ export default {
   }
 };
 
-async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeType: string, alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean> {
+async function parseAndUploadToR2(env: Env, count: number, user: string, blobID: string, mimeType: string, alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean> {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;
   // Try to load it into memory
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
@@ -137,7 +160,7 @@ async function parseAndUploadToR2(env: Env, user: string, blobID: string, mimeTy
       "alt": alt ?? "",
       "height": (aspectRatio?.height || 0).toString()
     };
-    await env.R2.put(`${user}/${uuidv4()}.${mime.getExtension(mimeType)}`, await bigBlobRush.blob(), {
+    await env.R2.put(`${count.toString()} - ${user}/${uuidv4()}.${mime.getExtension(mimeType)}`, await bigBlobRush.blob(), {
       customMetadata: metadataHold
     });
     return true;
