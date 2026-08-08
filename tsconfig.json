@@ -11,8 +11,8 @@
     "types": [
       "node",
       "@atcute/bluesky",
-      "./src/types.d.ts",
-      "./src/wrangler.d.ts"
+      "./src/types/types.d.ts",
+      "./src/types/wrangler.d.ts",
     ]
   },
 }

@@ -37,9 +37,12 @@ region = "gcp:northamerica-northeast2-a"
 
 [vars]
 # constrain yourself
-MAX_GALLERY_IMAGES="4"
-# socksthewolf.com
+MAX_GALLERY_IMAGES=4
+MAX_RECURSE_DEPTH=2
+
+# this is the did for socksthewolf.com
 SKIP_DID="did:plc:2vueglf2njr5gvdbaf75ih6a"
+
 # target post on atproto
-# use pdsls.dev to get this link (check info tab)
+# use pdsls.dev to get this link (check info tab for one click copy)
 TARGET=""

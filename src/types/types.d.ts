@@ -44,4 +44,14 @@ interface DIDLookupFailure {
   message: string;
 };
 
+interface BSkyRecordTask {
+  recordNumber: number;
+  username: string;
+  did: string;
+  rkey: string;
+  // way to stop infinite recursion
+  recurseDepth: number;
+};
+
+type R2Types = ReadableStream | ArrayBuffer | ArrayBufferView | string | null;
 type DIDLookupResult = DIDLookupFailure|DIDLookupSuccess;
