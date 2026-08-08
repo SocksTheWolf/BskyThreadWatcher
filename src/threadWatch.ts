@@ -1,9 +1,9 @@
 import has from "just-has";
+import isEmpty from "just-is-empty";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
 import { scrapeBSkyRecord } from "./scrapeRecord";
 import { getFXURL, getRecordFeed } from "./urls";
-import isEmpty from "just-is-empty";
 
 export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: string) {
   // Thread is empty, die.
@@ -12,7 +12,8 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thr
   }
 
   const hasWebhook: boolean = !isEmpty(env.WEBHOOK);
-  const discordWebhook: Webhook|null = hasWebhook ? new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
+  const discordWebhook: Webhook|null = hasWebhook ?
+    new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
 
   let newRecords: number;
   const allRecords = await fetch(getRecordFeed(env.TARGET), {

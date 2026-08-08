@@ -14,8 +14,8 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   // BIG TIME RUSH FETCH RECORD
   const bskyRecord = await fetch(getRecord(data.did, data.rkey));
   if (bskyRecord.ok) {
-    const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json() as RawRecord).value;
-    const mediaType: string = bskyRecordJson.embed?.$type || "";
+    const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json<RawRecord>()).value;
+    const mediaType: string = bskyRecordJson.embed?.$type ?? "";
     // Try to grab images
     if (mediaType === "app.bsky.embed.images") {
       const imgSchema: AppBskyEmbedImages.Main = (bskyRecordJson.embed! as AppBskyEmbedImages.Main);
@@ -58,8 +58,8 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     } else if (mediaType === "app.bsky.embed.record" || mediaType === "app.bsky.embed.recordWithMedia") {
       if (data.recurseDepth >= maxRecurseDepth) {
         console.warn(`${data.rkey} hit max recurse depth, bailing`);
-        // I'm not sure if I want to return true or false for this object tbh...
-        return true;
+        // I'm not sure if I want to return true or false for this case...
+        return false;
       }
       const externalSchema: AppBskyEmbedRecord.Main = (bskyRecordJson.embed! as AppBskyEmbedRecord.Main);
       const recordURI = externalSchema.record.uri;
@@ -70,7 +70,13 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       // Recurse and find a post that's valid.
       const newData = data;
       newData.recurseDepth = data.recurseDepth + 1;
-      newData.rkey = bskyPostRecordCapture.exec(recordURI)![1];
+      try {
+        newData.rkey = bskyPostRecordCapture.exec(recordURI)![1];
+      } catch (_ex: unknown) {
+        // if we have a match but somehow the capture group doesn't give us the rkey, then
+        // just stop traversing
+        return false;
+      }
       return await scrapeBSkyRecord(env, newData);
     } else {
       console.log("NO IMAGE BASED DATA FOUND, SKIPPING");
