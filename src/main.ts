@@ -1,125 +1,13 @@
-import has from "just-has";
-import isEmpty from "just-is-empty";
-// @ts-ignore
-import { Webhook } from "minimal-discord-webhook-node";
-import { scrapeBSkyRecord } from "./scrape";
-import { getFXURL, getRecordFeed } from "./urls";
+import { checkThreadForUpdates } from "./threadWatch";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const requestedURL: URL = new URL(request.url);
     if (requestedURL.pathname == "/")
-      await this.scheduled(null, env, ctx);
+      await checkThreadForUpdates(env, ctx, env.TARGET)
     return new Response("Hello, World");
   },
   async scheduled(_event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
-    if (isEmpty(env.TARGET)) {
-      console.warn("The target post url is empty, die.");
-      return;
-    }
-
-    const hasWebhook: boolean = !isEmpty(env.WEBHOOK);
-    const discordWebhook: Webhook|null = hasWebhook ? new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
-
-    let newRecords: number;
-    const allRecords = await fetch(getRecordFeed(env.TARGET), {
-      headers: {"Accept": "application/json"}
-    });
-    if (allRecords.ok) {
-      const jsonInfo: ATRecordBlob = await allRecords.json();
-      const previousRecord: LandmarkData|null = await env.KV.get("landmark", "json");
-      const totalRecords = jsonInfo.total;
-      // I have no records oh god help me please
-      if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
-        // check number of records
-        if (jsonInfo.linking_records.length > 0) {
-          const firstRKey: string = jsonInfo.linking_records[0].rkey;
-          // check to see if any records are different
-          if (previousRecord !== null && firstRKey == previousRecord.last_top_record) {
-            console.log("No new changes");
-            return;
-          }
-          const previousRecordCount = (previousRecord?.total ?? 0);
-          const recordDelta = totalRecords - previousRecordCount;
-          newRecords = previousRecordCount +1;
-          console.log(`Found ${recordDelta} new records...`);
-
-          if (hasWebhook)
-            ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
-
-          // Go until we find a record we've already processed.
-          for (const record of jsonInfo.linking_records) {
-            // skip any messages that are written by me
-            if (record.did === env.SKIP_DID)
-              continue;
-
-            // check if we have reviewed this record before
-            const recordExists: string|null = await env.KV.get(record.rkey);
-            if (recordExists !== null) {
-              break;
-            }
-
-            // Get the username
-            let username: string = record.did;
-            const usernameFetch = await fetch(`https://plc.directory/${record.did}`);
-            if (usernameFetch.ok) {
-              const rawUserFetch = await usernameFetch.json<DIDLookupResult>();
-              // Unnecessary, but safe anyways.
-              if (!has(rawUserFetch, "message")) {
-                const aliases = (rawUserFetch as DIDLookupSuccess).alsoKnownAs;
-                for (const alias of aliases) {
-                  if (alias.includes("at://")) {
-                    username = alias.replace("at://", "");
-                    break;
-                  }
-                }
-              }
-            } else {
-              console.warn(`Could not resolve username for ${record.did}`);
-            }
-
-            // We have never seen this object in our life, ever.
-            // "I know this, and I love you."
-            const data: BSkyRecordTask = {
-              recordNumber: newRecords,
-              username: username,
-              did: record.did,
-              rkey: record.rkey,
-              recurseDepth: 0
-            };
-
-            if (await scrapeBSkyRecord(env, data)) {
-              const fxURL = getFXURL(record.did, record.rkey);
-
-              // Valid records get stored and pushed to discord
-              await env.KV.put(record.rkey, fxURL);
-
-              // spin up a task to push to discord webhook later.
-              if (hasWebhook)
-                ctx.waitUntil(discordWebhook.send(fxURL));
-
-              console.log(`Successfully processed ${record.rkey}!`);
-              ++newRecords;
-            } else {
-              console.warn(`failed to process ${record.rkey}, skipped`);
-            }
-          }
-          // Save the last location that we were at
-          console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);
-          const updatedKVRecord: LandmarkData = {
-            cursor: jsonInfo.cursor,
-            total: jsonInfo.total,
-            last_top_record: firstRKey
-          };
-          await env.KV.put("landmark", JSON.stringify(updatedKVRecord));
-        } else {
-          console.log("NO RECORDS EXIST, OH DA MISERY.");
-        }
-      } else {
-        console.log("detected no changes in record");
-      }
-    } else {
-      console.warn(`Unable to get current bsky records, got return: "${allRecords.statusText}"`);
-    }
+    await checkThreadForUpdates(env, ctx, env.TARGET);
   }
 };

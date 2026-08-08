@@ -14,27 +14,27 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   return null;
 }
 
-export async function fetchImageAndUpload(env: Env, count: number, user: string, blobID: string, mimeType: string,
+export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
     alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean>
 {
-  const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;
+  const blobURL: string = `https://cdn.bsky.app/img/download/plain/${data.did}/${blobID}`;
   // Try to load it into memory
   const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
   if (bigBlobRush.ok) {
     // dump it on R2
     const metadataHold: CustomR2Metadata = {
-      "user": user,
+      "user": data.username,
       "type": mimeType,
       "width": (aspectRatio?.width || 0).toString(),
       "alt": alt ?? "",
       "height": (aspectRatio?.height || 0).toString()
     };
-    const uploadRes = await rawUploadToR2(env, count, user,
+    const uploadRes = await rawUploadToR2(env, data.recordNumber, data.username,
       `${uuidv4()}.${mime.getExtension(mimeType)}`,
       await bigBlobRush.bytes(), metadataHold);
     return uploadRes !== null;
   } else {
-    console.warn(`unable to save blob from user ${user} got error "${bigBlobRush.statusText}"`);
+    console.warn(`unable to save blob from user ${data.username} got error "${bigBlobRush.statusText}"`);
   }
   return false;
 }

@@ -24,7 +24,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         const blob: Blob<string> = embedData.image as Blob<string>;
         const blobID: string = (blob.ref as CidLink).$link;
         const mimeType: string = embedData.image.mimeType;
-        await fetchImageAndUpload(env, data.recordNumber, data.username, blobID, mimeType, embedData.alt, embedData.aspectRatio);
+        await fetchImageAndUpload(env, data, blobID, mimeType, embedData.alt, embedData.aspectRatio);
       }
     // Handle Galleries
     } else if (mediaType === "app.bsky.embed.gallery") {
@@ -38,7 +38,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
           const blob: Blob<string> = embedData.image as Blob<string>;
           const blobID: string = (blob.ref as CidLink).$link;
           const mimeType: string = embedData.image.mimeType;
-          if (await fetchImageAndUpload(env, data.recordNumber, data.username,
+          if (await fetchImageAndUpload(env, data,
               blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
             ++count;
           }
@@ -48,7 +48,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       const externalData: AppBskyEmbedExternal.External = (bskyRecordJson.embed! as unknown as AppBskyEmbedExternal.External);
       const thumbData: Blob<string>|undefined = externalData.thumb as Blob<string>|undefined;
       if (thumbData !== undefined) {
-        await fetchImageAndUpload(env, data.recordNumber, data.username, thumbData.ref.$link, thumbData.mimeType);
+        await fetchImageAndUpload(env, data, thumbData.ref.$link, thumbData.mimeType);
       } else {
         console.warn(`Unable to get thumb data for ${data.rkey} by ${data.username}`);
         return false;
