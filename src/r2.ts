@@ -14,7 +14,7 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   return null;
 }
 
-export async function parseAndUploadToR2(env: Env, count: number, user: string, blobID: string, mimeType: string,
+export async function fetchImageAndUpload(env: Env, count: number, user: string, blobID: string, mimeType: string,
     alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean>
 {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${user}/${blobID}`;

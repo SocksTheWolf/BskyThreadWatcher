@@ -2,7 +2,7 @@ import has from "just-has";
 import isEmpty from "just-is-empty";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
-import { parseBSkyRecord } from "./scrape";
+import { scrapeBSkyRecord } from "./scrape";
 import { getFXURL, getRecordFeed } from "./urls";
 
 export default {
@@ -88,7 +88,7 @@ export default {
               recurseDepth: 0
             };
 
-            if (await parseBSkyRecord(env, data)) {
+            if (await scrapeBSkyRecord(env, data)) {
               const fxURL = getFXURL(record.did, record.rkey);
 
               // Valid records get stored and pushed to discord

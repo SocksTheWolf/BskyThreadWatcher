@@ -3,12 +3,12 @@ import type {
   AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyFeedPost
 } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
-import { parseAndUploadToR2 } from "./r2";
+import { fetchImageAndUpload } from "./r2";
 import { getRecord } from "./urls";
 
 const bskyPostRecordCapture = /at:\/\/(?:.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
-export async function parseBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
+export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
   // BIG TIME RUSH FETCH RECORD
@@ -24,7 +24,7 @@ export async function parseBSkyRecord(env: Env, data: BSkyRecordTask): Promise<b
         const blob: Blob<string> = embedData.image as Blob<string>;
         const blobID: string = (blob.ref as CidLink).$link;
         const mimeType: string = embedData.image.mimeType;
-        await parseAndUploadToR2(env, data.recordNumber, data.username, blobID, mimeType, embedData.alt, embedData.aspectRatio);
+        await fetchImageAndUpload(env, data.recordNumber, data.username, blobID, mimeType, embedData.alt, embedData.aspectRatio);
       }
     // Handle Galleries
     } else if (mediaType === "app.bsky.embed.gallery") {
@@ -38,7 +38,7 @@ export async function parseBSkyRecord(env: Env, data: BSkyRecordTask): Promise<b
           const blob: Blob<string> = embedData.image as Blob<string>;
           const blobID: string = (blob.ref as CidLink).$link;
           const mimeType: string = embedData.image.mimeType;
-          if (await parseAndUploadToR2(env, data.recordNumber, data.username,
+          if (await fetchImageAndUpload(env, data.recordNumber, data.username,
               blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
             ++count;
           }
@@ -48,7 +48,7 @@ export async function parseBSkyRecord(env: Env, data: BSkyRecordTask): Promise<b
       const externalData: AppBskyEmbedExternal.External = (bskyRecordJson.embed! as unknown as AppBskyEmbedExternal.External);
       const thumbData: Blob<string>|undefined = externalData.thumb as Blob<string>|undefined;
       if (thumbData !== undefined) {
-        await parseAndUploadToR2(env, data.recordNumber, data.username, thumbData.ref.$link, thumbData.mimeType);
+        await fetchImageAndUpload(env, data.recordNumber, data.username, thumbData.ref.$link, thumbData.mimeType);
       } else {
         console.warn(`Unable to get thumb data for ${data.rkey} by ${data.username}`);
         return false;
@@ -71,7 +71,7 @@ export async function parseBSkyRecord(env: Env, data: BSkyRecordTask): Promise<b
       const newData = data;
       newData.recurseDepth = data.recurseDepth + 1;
       newData.rkey = bskyPostRecordCapture.exec(recordURI)![1];
-      return await parseBSkyRecord(env, newData);
+      return await scrapeBSkyRecord(env, newData);
     } else {
       console.log("NO IMAGE BASED DATA FOUND, SKIPPING");
       return false;
