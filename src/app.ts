@@ -1,5 +1,3 @@
-
-
 import clone from "just-clone";
 import isEmpty from "just-is-empty";
 import { likeBskyPost } from "./actions/likePost";

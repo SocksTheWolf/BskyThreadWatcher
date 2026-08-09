@@ -34,6 +34,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
 
     if (isFirstRecurse) {
       data.cid = bskyRawRecord.cid;
+      data.uri = bskyRawRecord.uri;
 
       // Save the post text
       if (!isEmpty(bskyRecordJson.text))
