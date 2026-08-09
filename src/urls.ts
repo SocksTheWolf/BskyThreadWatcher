@@ -9,3 +9,7 @@ export const getRecordFeed = (feed: string) => {
 export const getFXURL = (did: string, rkey: string) => {
   return `https://fxbsky.app/profile/${did}/post/${rkey}`;
 }
+
+export const usernameLookup = (did: string) => {
+  return `https://plc.directory/${did}`;
+}

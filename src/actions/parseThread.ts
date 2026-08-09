@@ -1,24 +1,8 @@
-import has from "just-has";
 import isEmpty from "just-is-empty";
-import { handleScrape } from "./scrapeRecord";
-import type { DiscordWebhook } from "./services/discord";
-import { getDiscordWebhook } from "./services/discord";
-import { getRecordFeed } from "./urls";
-import { hasThreadToWatch } from "./utils";
+import type { DiscordWebhook } from "../services/discord";
+import { getRecordFeed, usernameLookup } from "../urls";
 
-export async function checkThreadsForUpdates(env: Env, ctx: ExecutionContext) {
-  for (const thread of env.TARGET.values) {
-    await checkThreadForUpdates(env, ctx, thread);
-  }
-}
-
-async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: string) {
-  // Thread is empty, die.
-  if (!hasThreadToWatch(env)) {
-    return;
-  }
-
-  const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
+export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread: string, discordWebhook: DiscordWebhook=null) {
   const allRecords = await fetch(getRecordFeed(thread), {
     headers: {"Accept": "application/json"}
   });
@@ -43,8 +27,9 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
         const recordDelta = totalRecords - previousRecordCount;
         let newRecords: number = globalTotal + 1;
 
+        // @ts-expect-error - "true"/"false" type overlap
         if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true")
-          ctx.waitUntil(discordWebhook!.send(`Found ${recordDelta} new records`));
+          ctx.waitUntil(discordWebhook?.send(`Found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
@@ -60,23 +45,7 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
           }
 
           // Get the username
-          let username: string = record.did;
-          const usernameFetch = await fetch(`https://plc.directory/${record.did}`);
-          if (usernameFetch.ok) {
-            const rawUserFetch = await usernameFetch.json<DIDLookupResult>();
-            // Unnecessary, but safe anyways. Message is an error.
-            if (!has(rawUserFetch, "message")) {
-              const aliases = (rawUserFetch as DIDLookupSuccess).alsoKnownAs;
-              for (const alias of aliases) {
-                if (alias.includes("at://")) {
-                  username = alias.replace("at://", "");
-                  break;
-                }
-              }
-            }
-          } else {
-            console.warn(`Could not resolve username for ${record.did}`);
-          }
+          const username: string = await usernameLookup(record.did);
 
           // We have never seen this object in our life, ever.
           // "I know this, and I love you."
@@ -88,11 +57,7 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
             recurseDepth: 0
           };
 
-          const didHandleScrape = (env.USE_QUEUES === "true") ?
-            await env.THREAD_UPDATE_QUEUE!.send(data, {contentType: 'v8'})
-            : await handleScrape(env, ctx, data, discordWebhook);
-
-          if (didHandleScrape) {
+          if (await env.THREAD_UPDATE_QUEUE?.send(data, {contentType: 'v8'})) {
             ++newRecords;
           } else {
             console.warn(`failed to process ${record.rkey}, skipped`);

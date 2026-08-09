@@ -1,6 +1,6 @@
 # BskyThreadWatcher
 
-A microservice/runner that scrapes all the replies to a given post.
+A microservice/runner that scrapes all the replies to a given post (or posts).
 
 Throw this onto Cloudflare workers and call it a day. You'll have every post ever made to the thread.
 

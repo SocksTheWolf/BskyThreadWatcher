@@ -1,8 +1,11 @@
-import { handleScrape } from "./scrapeRecord";
-import { checkThreadsForUpdates } from "./threadWatch";
+import isEmpty from "just-is-empty";
 import type { DiscordWebhook } from "./services/discord";
 import { getDiscordWebhook } from "./services/discord";
-import { hasThreadToWatch } from "./utils";
+import { checkThreadsForUpdates, handleScrape } from "./app";
+
+const hasThreadToWatch = (env: Env): boolean => {
+  return !isEmpty(env.TARGET.values);
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -21,11 +24,11 @@ export default {
 
     await checkThreadsForUpdates(env, ctx);
   },
-  async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, ctx: ExecutionContext) {
+  async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, _ctx: ExecutionContext) {
     const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
     for (const message of batch.messages) {
       try {
-        await handleScrape(env, ctx, message.body, discordWebhook);
+        await handleScrape(env, message.body, discordWebhook);
         message.ack();
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));

@@ -1,9 +1,14 @@
 import isEmpty from "just-is-empty";
-import { AtProtoAgent } from "./services/bskyAgent";
+import { AtProtoAgent } from "../services/bskyAgent";
 
 export async function likeBskyPost(env: Env, data: BSkyRecordTask) {
-  if (isEmpty(env.BSKY_APP_PASSWORD) || data.cid === undefined || data.uri === undefined)
+  if (isEmpty(env.BSKY_APP_PASSWORD))
     return;
+
+  console.log(`Attempting to like post ${data.uri} with cid ${data.cid}`);
+  if (data.cid === undefined || data.uri === undefined) {
+    return;
+  }
 
   try {
     const agent = new AtProtoAgent();

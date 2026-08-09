@@ -4,20 +4,24 @@ import type {
   AppBskyEmbedRecordWithMedia, AppBskyFeedPost
 } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
-import clone from "just-clone";
 import isEmpty from "just-is-empty";
-import { likeBskyPost } from "./likePost";
-import type { DiscordWebhook } from "./services/discord";
-import { fetchImageAndUpload, saveRecordText } from "./services/r2";
-import { getFXURL, getRecord } from "./urls";
+import { fetchImageAndUpload, saveRecordText } from "../services/r2";
+import { getRecord } from "../urls";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
-async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
+export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
   if (data.did === env.SKIP_DID) {
     console.log(`${data.rkey} - was a post by a skip author, bailing`);
     return false;
   }
+
+  // if the record was somehow invalid, break out now. Do not continue.
+  if (isEmpty(data.did) || isEmpty(data.rkey)) {
+    console.warn("data provided was invalid, breaking out.");
+    return false;
+  }
+
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
   const isFirstRecurse: boolean = data.recurseDepth <= 0;
@@ -37,6 +41,7 @@ async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean
     }
 
     let mediaType: string = bskyRecordJson.embed?.$type ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let embedPoint: unknown = bskyRecordJson.embed!;
 
     // If we are a record with media, this is the furthest that we'll go and we'll
@@ -109,8 +114,8 @@ async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean
       newData.recurseDepth = data.recurseDepth + 1;
       try {
         const regExCapture = bskyPostRecordCapture.exec(recordURI);
-        newData.did = regExCapture![1]
-        newData.rkey = regExCapture![2];
+        newData.did = regExCapture?.[1] ?? "";
+        newData.rkey = regExCapture?.[2] ?? "";
       } catch (ex: unknown) {
         // if we have a match but somehow the capture group doesn't give us the rkey, then
         // just stop traversing
@@ -127,36 +132,4 @@ async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean
     console.error(`${data.rkey} - Could not fetch record for post`);
     return false;
   }
-}
-
-export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
-  // clone the original data because scrapeBskyRecord can potentially rewrite it.
-  const origData: BSkyRecordTask = clone(data);
-
-  // prevent writes from failing
-  console.log(`${data.rkey} - handling scrape task`);
-  if (await env.KV.get(data.rkey) !== null) {
-    console.log(`${data.rkey} - skipping, KV entry already exists`);
-    return true;
-  }
-
-  if (await scrapeBSkyRecord(env, data)) {
-    const fxURL = getFXURL(origData.did, origData.rkey);
-
-    // Valid records get stored and pushed to discord
-    await env.KV.put(origData.rkey, fxURL);
-
-    // pass the data object in, it should have the correct fields filled out.
-    if (!isEmpty(env.BSKY_APP_PASSWORD)) {
-      ctx.waitUntil(likeBskyPost(env, data));
-    }
-
-    // spin up a task to push to discord webhook later.
-    if (discordWebhook !== null)
-      await discordWebhook.send(fxURL);
-
-    console.log(`Successfully processed ${origData.rkey}!`);
-    return true;
-  }
-  return false;
 }
