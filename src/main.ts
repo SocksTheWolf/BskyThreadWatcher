@@ -1,7 +1,8 @@
 import { handleScrape } from "./scrapeRecord";
 import { checkThreadsForUpdates } from "./threadWatch";
-import type { DiscordWebhook } from "./utils";
-import { getDiscordWebhook, hasThreadToWatch } from "./utils";
+import type { DiscordWebhook } from "./services/discord";
+import { getDiscordWebhook } from "./services/discord";
+import { hasThreadToWatch } from "./utils";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {

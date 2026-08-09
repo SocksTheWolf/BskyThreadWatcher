@@ -7,9 +7,9 @@ import type { Blob, CidLink } from "@atcute/lexicons";
 import clone from "just-clone";
 import isEmpty from "just-is-empty";
 import { likeBskyPost } from "./likePost";
-import { fetchImageAndUpload, saveRecordText } from "./r2";
+import type { DiscordWebhook } from "./services/discord";
+import { fetchImageAndUpload, saveRecordText } from "./services/r2";
 import { getFXURL, getRecord } from "./urls";
-import type { DiscordWebhook } from "./utils";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 

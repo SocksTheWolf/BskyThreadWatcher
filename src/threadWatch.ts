@@ -1,9 +1,10 @@
 import has from "just-has";
 import isEmpty from "just-is-empty";
 import { handleScrape } from "./scrapeRecord";
+import type { DiscordWebhook } from "./services/discord";
+import { getDiscordWebhook } from "./services/discord";
 import { getRecordFeed } from "./urls";
-import { getDiscordWebhook, hasThreadToWatch } from "./utils";
-import type { DiscordWebhook } from "./utils";
+import { hasThreadToWatch } from "./utils";
 
 export async function checkThreadsForUpdates(env: Env, ctx: ExecutionContext) {
   for (const thread of env.TARGET.values) {
@@ -18,14 +19,14 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
   }
 
   const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
-
-  let newRecords: number;
   const allRecords = await fetch(getRecordFeed(thread), {
     headers: {"Accept": "application/json"}
   });
   if (allRecords.ok) {
     const jsonInfo: ATRecordBlob = await allRecords.json<ATRecordBlob>();
     const previousRecord: LandmarkData|null = await env.KV.get(thread, "json");
+    const globalTotalStr: string|null = await env.KV.get("global_total", "text");
+    const globalTotal: number = globalTotalStr !== null ? Number(globalTotalStr) : 0;
     const totalRecords = jsonInfo.total;
     // I have no records oh god help me please
     if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
@@ -40,7 +41,7 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
         }
         const previousRecordCount = (previousRecord?.total ?? 0);
         const recordDelta = totalRecords - previousRecordCount;
-        newRecords = previousRecordCount +1;
+        let newRecords: number = globalTotal + 1;
 
         if (!isEmpty(env.WEBHOOK))
           ctx.waitUntil(discordWebhook!.send(`Found ${recordDelta} new records`));
@@ -105,6 +106,8 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
           last_top_record: firstRKey
         };
         await env.KV.put(thread, JSON.stringify(updatedKVRecord));
+        // also put the global total in across all threads.
+        await env.KV.put("global_total", newRecords.toString());
       } else {
         console.log("NO RECORDS EXIST, OH DA MISERY.");
       }

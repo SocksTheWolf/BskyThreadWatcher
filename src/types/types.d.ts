@@ -58,5 +58,10 @@ interface BSkyRecordTask {
   recurseDepth: number;
 };
 
+interface AtProtoAgentLoginOptions {
+  identifier: string;
+  password: string;
+};
+
 type R2Types = ReadableStream | ArrayBuffer | ArrayBufferView | string | null;
 type DIDLookupResult = DIDLookupFailure|DIDLookupSuccess;
