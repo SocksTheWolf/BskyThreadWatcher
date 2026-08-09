@@ -6,7 +6,7 @@ import { scrapeBSkyRecord } from "./actions/scrapeBSky";
 import { getDiscordWebhook, type DiscordWebhook } from "./services/discord";
 import { getFXURL } from "./urls";
 
-export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
+export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
   // clone the original data because scrapeBskyRecord can potentially rewrite it.
   const origData: BSkyRecordTask = clone(data);
 
@@ -25,7 +25,7 @@ export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhoo
 
     // pass the data object in, it should have the correct fields filled out.
     if (!isEmpty(env.BSKY_APP_PASSWORD)) {
-      await likeBskyPost(env, data);
+      ctx.waitUntil(likeBskyPost(env, data));
     }
 
     // spin up a task to push to discord webhook later.

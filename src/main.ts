@@ -24,11 +24,11 @@ export default {
 
     await checkThreadsForUpdates(env, ctx);
   },
-  async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, _ctx: ExecutionContext) {
+  async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, ctx: ExecutionContext) {
     const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
     for (const message of batch.messages) {
       try {
-        await handleScrape(env, message.body, discordWebhook);
+        await handleScrape(env, ctx, message.body, discordWebhook);
         message.ack();
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));

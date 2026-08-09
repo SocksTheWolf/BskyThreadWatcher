@@ -3,11 +3,11 @@ import { AtProtoAgent } from "../services/bskyAgent";
 
 export async function likeBskyPost(env: Env, data: BSkyRecordTask) {
   if (isEmpty(env.BSKY_APP_PASSWORD))
-    return;
+    return false;
 
   console.log(`Attempting to like post ${data.uri} with cid ${data.cid}`);
   if (data.cid === undefined || data.uri === undefined) {
-    return;
+    return false;
   }
 
   try {
