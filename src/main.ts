@@ -1,6 +1,6 @@
 import { handleScrape } from "./scrapeRecord";
 import { checkThreadForUpdates } from "./threadWatch";
-import type { DiscordWebhook } from "./types/webhookType";
+import type { DiscordWebhook } from "./utils";
 import { getDiscordWebhook, hasThreadToWatch } from "./utils";
 
 export default {

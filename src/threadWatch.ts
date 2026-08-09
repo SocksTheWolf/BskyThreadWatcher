@@ -1,10 +1,9 @@
 import has from "just-has";
 import isEmpty from "just-is-empty";
-// @ts-ignore
-import { Webhook } from "minimal-discord-webhook-node";
 import { handleScrape } from "./scrapeRecord";
 import { getRecordFeed } from "./urls";
-import { hasThreadToWatch } from "./utils";
+import { getDiscordWebhook, hasThreadToWatch } from "./utils";
+import type { DiscordWebhook } from "./utils";
 
 export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
   // Thread is empty, die.
@@ -12,9 +11,7 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
     return;
   }
 
-  const hasWebhook: boolean = !isEmpty(env.WEBHOOK);
-  const discordWebhook: Webhook|null = hasWebhook ?
-    new Webhook({url: env.WEBHOOK, throwErrors: false, retryOnLimit: true}) : null;
+  const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
 
   let newRecords: number;
   const allRecords = await fetch(getRecordFeed(env.TARGET), {
@@ -39,8 +36,8 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
         const recordDelta = totalRecords - previousRecordCount;
         newRecords = previousRecordCount +1;
 
-        if (hasWebhook)
-          ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
+        if (!isEmpty(env.WEBHOOK))
+          ctx.waitUntil(discordWebhook!.send(`Found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {

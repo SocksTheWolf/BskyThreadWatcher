@@ -1,7 +1,6 @@
 import isEmpty from "just-is-empty";
-// @ts-ignore
+// @ts-expect-error 7016
 import { Webhook } from "minimal-discord-webhook-node";
-import { DiscordWebhook } from "./types/webhookType";
 
 export const getDiscordWebhook = (env: Env): DiscordWebhook => {
   return !isEmpty(env.WEBHOOK) ?
@@ -11,3 +10,4 @@ export const getDiscordWebhook = (env: Env): DiscordWebhook => {
 export const hasThreadToWatch = (env: Env): boolean => {
   return !isEmpty(env.TARGET);
 }
+export type DiscordWebhook = Webhook | null;

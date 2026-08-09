@@ -1,11 +1,12 @@
 {
   "name": "bskythreadwatcher",
   "author": {
-    "name": "socksthewolf",
+    "name": "SocksTheWolf",
     "url": "https://socksthewolf.com"
   },
+  "repository": "git:socksthewolf/BskyThreadWatcher",
   "license": "MIT",
-  "private": "true",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
