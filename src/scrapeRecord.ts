@@ -5,9 +5,10 @@ import type {
 } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
 import clone from "just-clone";
-import { fetchImageAndUpload } from "./r2";
-import type { DiscordWebhook } from "./utils";
+import isEmpty from "just-is-empty";
+import { fetchImageAndUpload, saveRecordText } from "./r2";
 import { getFXURL, getRecord } from "./urls";
+import type { DiscordWebhook } from "./utils";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
@@ -22,6 +23,11 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   const bskyRecord = await fetch(getRecord(data.did, data.rkey));
   if (bskyRecord.ok) {
     const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json<RawRecord>()).value;
+
+    // Save the post text
+    if (!isEmpty(bskyRecordJson.text) && data.recurseDepth <= 0)
+      await saveRecordText(env, data, bskyRecordJson.text);
+
     let mediaType: string = bskyRecordJson.embed?.$type ?? "";
     let embedPoint: unknown = bskyRecordJson.embed!;
 

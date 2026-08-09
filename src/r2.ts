@@ -14,6 +14,10 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   return null;
 }
 
+export async function saveRecordText(env: Env, data: BSkyRecordTask, text: string) {
+  await rawUploadToR2(env, data.recordNumber, data.username, "post.txt", text);
+}
+
 export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
     alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean>
 {
