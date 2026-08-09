@@ -51,6 +51,7 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
           // check if we have reviewed this record before
           const recordExists: string|null = await env.KV.get(record.rkey);
           if (recordExists !== null) {
+            console.log(`record ${record.rkey} exists, breaking out`);
             break;
           }
 

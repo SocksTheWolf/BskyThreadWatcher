@@ -11,7 +11,7 @@ send_metrics = false
 # mirror of file data
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "onlyuppies"
+bucket_name = "onlyuppies2"
 remote = true
 
 # used for bookkeeping records

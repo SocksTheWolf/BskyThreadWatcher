@@ -26,8 +26,8 @@ export default {
       try {
         await handleScrape(env, message.body, discordWebhook);
         message.ack();
-      } catch(err) {
-        console.error(err);
+      } catch (err) {
+        console.error("Failed to process message, got error: " + String(err));
         message.retry();
       }
     }
