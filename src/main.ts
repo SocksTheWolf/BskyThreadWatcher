@@ -1,5 +1,5 @@
 import { handleScrape } from "./scrapeRecord";
-import { checkThreadForUpdates } from "./threadWatch";
+import { checkThreadsForUpdates } from "./threadWatch";
 import type { DiscordWebhook } from "./utils";
 import { getDiscordWebhook, hasThreadToWatch } from "./utils";
 
@@ -9,7 +9,7 @@ export default {
 
     // only really useful for local debug
     if (requestedURL.pathname == "/" && hasThreadToWatch(env))
-      await checkThreadForUpdates(env, ctx)
+      await checkThreadsForUpdates(env, ctx)
 
     return new Response("Hello, World");
   },
@@ -18,7 +18,7 @@ export default {
     if (!hasThreadToWatch(env))
       return;
 
-    await checkThreadForUpdates(env, ctx);
+    await checkThreadsForUpdates(env, ctx);
   },
   async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, ctx: ExecutionContext) {
     const discordWebhook: DiscordWebhook = getDiscordWebhook(env);

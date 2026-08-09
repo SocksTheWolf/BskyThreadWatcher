@@ -5,7 +5,13 @@ import { getRecordFeed } from "./urls";
 import { getDiscordWebhook, hasThreadToWatch } from "./utils";
 import type { DiscordWebhook } from "./utils";
 
-export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
+export async function checkThreadsForUpdates(env: Env, ctx: ExecutionContext) {
+  for (const thread of env.TARGET.values) {
+    await checkThreadForUpdates(env, ctx, thread);
+  }
+}
+
+async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: string) {
   // Thread is empty, die.
   if (!hasThreadToWatch(env)) {
     return;
@@ -14,12 +20,12 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
   const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
 
   let newRecords: number;
-  const allRecords = await fetch(getRecordFeed(env.TARGET), {
+  const allRecords = await fetch(getRecordFeed(thread), {
     headers: {"Accept": "application/json"}
   });
   if (allRecords.ok) {
     const jsonInfo: ATRecordBlob = await allRecords.json<ATRecordBlob>();
-    const previousRecord: LandmarkData|null = await env.KV.get("landmark", "json");
+    const previousRecord: LandmarkData|null = await env.KV.get(thread, "json");
     const totalRecords = jsonInfo.total;
     // I have no records oh god help me please
     if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
@@ -98,7 +104,7 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
           total: jsonInfo.total,
           last_top_record: firstRKey
         };
-        await env.KV.put("landmark", JSON.stringify(updatedKVRecord));
+        await env.KV.put(thread, JSON.stringify(updatedKVRecord));
       } else {
         console.log("NO RECORDS EXIST, OH DA MISERY.");
       }

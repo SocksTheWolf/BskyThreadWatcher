@@ -62,6 +62,6 @@ BSKY_USERNAME="socksthewolf.com"
 # if cf queues can be used, if so, then you've got much longer to process data (and can do it more frequently)
 USE_QUEUES = "true"
 
-# target post on atproto
+# target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
-TARGET="at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22"
+TARGET={"values"=["at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22"]}

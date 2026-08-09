@@ -8,6 +8,6 @@ export const getDiscordWebhook = (env: Env): DiscordWebhook => {
 }
 
 export const hasThreadToWatch = (env: Env): boolean => {
-  return !isEmpty(env.TARGET);
+  return !isEmpty(env.TARGET.values);
 }
 export type DiscordWebhook = Webhook | null;
