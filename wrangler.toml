@@ -36,6 +36,7 @@ binding = "THREAD_UPDATE_QUEUE"
 
 [[queues.consumers]]
 queue = "bsky-thread-watcher"
+max_batch_size = 3
 max_batch_timeout = 3
 max_retries = 2
 
@@ -52,7 +53,7 @@ region = "gcp:northamerica-northeast2-a"
 MAX_GALLERY_IMAGES=4
 MAX_RECURSE_DEPTH=2
 
-# this is the did for socksthewolf.com
+# this is the did for socksthewolf.com, any posts with this DID will not be processed.
 SKIP_DID="did:plc:2vueglf2njr5gvdbaf75ih6a"
 
 # if cf queues can be used, if so, then you've got much longer to process data (and can do it more frequently)

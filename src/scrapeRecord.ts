@@ -12,6 +12,10 @@ import { getFXURL, getRecord } from "./urls";
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
 export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
+  if (data.did === env.SKIP_DID) {
+    console.log(`${data.rkey} - was a post by a skip author, bailing`);
+    return false;
+  }
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
   // BIG TIME RUSH FETCH RECORD
