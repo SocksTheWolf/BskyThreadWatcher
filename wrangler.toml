@@ -38,7 +38,7 @@ max_retries = 2
 
 # no webhook = no maidens
 [secrets]
-required=["WEBHOOK", "BSKY_APP_PASSWORD"]
+required=["DISCORD_WEBHOOK", "BSKY_APP_PASSWORD"]
 
 # closest to microcosm data
 [placement]
