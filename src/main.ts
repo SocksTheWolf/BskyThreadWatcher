@@ -1,4 +1,6 @@
 import isEmpty from "just-is-empty";
+import type { AtProtoAgentType } from "./actions/bskyLogin";
+import { getBSkyAgent } from "./actions/bskyLogin";
 import { checkThreadsForUpdates, handleScrape } from "./app";
 import type { DiscordWebhook } from "./services/discord";
 import { getDiscordWebhook } from "./services/discord";
@@ -26,9 +28,10 @@ export default {
   },
   async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, ctx: ExecutionContext) {
     const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
+    const bskyAgent: AtProtoAgentType = await getBSkyAgent(env)
     for (const message of batch.messages) {
       try {
-        await handleScrape(env, ctx, message.body, discordWebhook);
+        await handleScrape(env, ctx, message.body, discordWebhook, bskyAgent);
         message.ack();
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));
