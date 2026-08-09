@@ -43,7 +43,7 @@ async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: st
         const recordDelta = totalRecords - previousRecordCount;
         let newRecords: number = globalTotal + 1;
 
-        if (!isEmpty(env.WEBHOOK))
+        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true")
           ctx.waitUntil(discordWebhook!.send(`Found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.

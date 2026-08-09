@@ -63,7 +63,7 @@ BSKY_USERNAME="socksthewolf.com"
 USE_QUEUES = "true"
 
 # if the number of found records should be posted to the discord webhook
-POST_RECORD_FINDINGS="true"
+POST_RECORD_FINDINGS="false"
 
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
