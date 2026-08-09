@@ -1,7 +1,7 @@
 import isEmpty from "just-is-empty";
+import { checkThreadsForUpdates, handleScrape } from "./app";
 import type { DiscordWebhook } from "./services/discord";
 import { getDiscordWebhook } from "./services/discord";
-import { checkThreadsForUpdates, handleScrape } from "./app";
 
 const hasThreadToWatch = (env: Env): boolean => {
   return !isEmpty(env.TARGET.values);
