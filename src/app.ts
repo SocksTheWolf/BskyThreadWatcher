@@ -25,7 +25,6 @@ export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhoo
 
     // pass the data object in, it should have the correct fields filled out.
     if (!isEmpty(env.BSKY_APP_PASSWORD)) {
-      console.log(`Attempting to like post ${data.uri}`);
       await likeBskyPost(env, data);
     }
 
