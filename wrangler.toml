@@ -41,7 +41,7 @@ max_retries = 2
 
 # no webhook = no maidens
 [secrets]
-required=["WEBHOOK"]
+required=["WEBHOOK", "BSKY_APP_PASSWORD"]
 
 # closest to microcosm data
 [placement]
@@ -55,6 +55,9 @@ MAX_RECURSE_DEPTH=2
 # this is the did for socksthewolf.com, any posts with this DID will not be processed.
 # change the did to add something else
 SKIP_DID="did:plc:2vueglf2njr5gvdbaf75ih6a"
+
+# user id for post liking
+BSKY_USERNAME="socksthewolf.com"
 
 # if cf queues can be used, if so, then you've got much longer to process data (and can do it more frequently)
 USE_QUEUES = "true"

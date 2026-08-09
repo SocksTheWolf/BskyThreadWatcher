@@ -6,27 +6,35 @@ import type {
 import type { Blob, CidLink } from "@atcute/lexicons";
 import clone from "just-clone";
 import isEmpty from "just-is-empty";
+import { likeBskyPost } from "./likePost";
 import { fetchImageAndUpload, saveRecordText } from "./r2";
 import { getFXURL, getRecord } from "./urls";
 import type { DiscordWebhook } from "./utils";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
-export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
+async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
   if (data.did === env.SKIP_DID) {
     console.log(`${data.rkey} - was a post by a skip author, bailing`);
     return false;
   }
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
+  const isFirstRecurse: boolean = data.recurseDepth <= 0;
   // BIG TIME RUSH FETCH RECORD
   const bskyRecord = await fetch(getRecord(data.did, data.rkey));
   if (bskyRecord.ok) {
-    const bskyRecordJson: AppBskyFeedPost.Main = (await bskyRecord.json<RawRecord>()).value;
 
-    // Save the post text
-    if (!isEmpty(bskyRecordJson.text) && data.recurseDepth <= 0)
-      await saveRecordText(env, data, bskyRecordJson.text);
+    const bskyRawRecord: RawRecord = await bskyRecord.json<RawRecord>();
+    const bskyRecordJson: AppBskyFeedPost.Main = bskyRawRecord.value;
+
+    if (isFirstRecurse) {
+      data.cid = bskyRawRecord.cid;
+
+      // Save the post text
+      if (!isEmpty(bskyRecordJson.text))
+        await saveRecordText(env, data, bskyRecordJson.text);
+    }
 
     let mediaType: string = bskyRecordJson.embed?.$type ?? "";
     let embedPoint: unknown = bskyRecordJson.embed!;
@@ -121,7 +129,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   }
 }
 
-export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
+export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
   // clone the original data because scrapeBskyRecord can potentially rewrite it.
   const origData: BSkyRecordTask = clone(data);
 
@@ -137,6 +145,11 @@ export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhoo
 
     // Valid records get stored and pushed to discord
     await env.KV.put(origData.rkey, fxURL);
+
+    // pass the data object in, it should have the correct fields filled out.
+    if (!isEmpty(env.BSKY_APP_PASSWORD)) {
+      ctx.waitUntil(likeBskyPost(env, data));
+    }
 
     // spin up a task to push to discord webhook later.
     if (discordWebhook !== null)

@@ -30,6 +30,8 @@ interface CustomR2Metadata extends Record<string, string> {
 };
 
 interface RawRecord {
+  uri: string;
+  cid: string;
   value: AppBskyFeedPost.Main
 };
 
@@ -49,6 +51,9 @@ interface BSkyRecordTask {
   username: string;
   did: string;
   rkey: string;
+  // filled in by scrapeBSkyRecord
+  uri?: string;
+  cid?: string;
   // way to stop infinite recursion
   recurseDepth: number;
 };

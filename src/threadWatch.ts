@@ -83,7 +83,7 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
 
           const didHandleScrape = (env.USE_QUEUES === "true") ?
             await env.THREAD_UPDATE_QUEUE!.send(data, {contentType: 'v8'})
-            : await handleScrape(env, data, discordWebhook);
+            : await handleScrape(env, ctx, data, discordWebhook);
 
           if (didHandleScrape) {
             ++newRecords;
