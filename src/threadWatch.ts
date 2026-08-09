@@ -2,12 +2,13 @@ import has from "just-has";
 import isEmpty from "just-is-empty";
 // @ts-ignore
 import { Webhook } from "minimal-discord-webhook-node";
-import { scrapeBSkyRecord } from "./scrapeRecord";
-import { getFXURL, getRecordFeed } from "./urls";
+import { handleScrape } from "./scrapeRecord";
+import { getRecordFeed } from "./urls";
+import { hasThreadToWatch } from "./utils";
 
-export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thread: string) {
+export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext) {
   // Thread is empty, die.
-  if (isEmpty(thread)) {
+  if (!hasThreadToWatch(env)) {
     return;
   }
 
@@ -82,17 +83,11 @@ export async function checkThreadForUpdates(env: Env, ctx: ExecutionContext, thr
             recurseDepth: 0
           };
 
-          if (await scrapeBSkyRecord(env, data)) {
-            const fxURL = getFXURL(record.did, record.rkey);
+          const didHandleScrape = (env.USE_QUEUES === "true") ?
+            await env.THREAD_UPDATE_QUEUE!.send(data, {contentType: 'v8'})
+            : await handleScrape(env, data, discordWebhook);
 
-            // Valid records get stored and pushed to discord
-            await env.KV.put(record.rkey, fxURL);
-
-            // spin up a task to push to discord webhook later.
-            if (hasWebhook)
-              ctx.waitUntil(discordWebhook.send(fxURL));
-
-            console.log(`Successfully processed ${record.rkey}!`);
+          if (didHandleScrape) {
             ++newRecords;
           } else {
             console.warn(`failed to process ${record.rkey}, skipped`);

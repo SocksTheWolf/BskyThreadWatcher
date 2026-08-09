@@ -4,7 +4,8 @@ import type {
 } from "@atcute/bluesky";
 import type { Blob, CidLink } from "@atcute/lexicons";
 import { fetchImageAndUpload } from "./r2";
-import { getRecord } from "./urls";
+import type { DiscordWebhook } from "./types/webhookType";
+import { getFXURL, getRecord } from "./urls";
 
 const bskyPostRecordCapture = /at:\/\/(?:.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
@@ -87,4 +88,21 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     console.error(`We couldn't fetch the record for ${data.rkey}`);
     return false;
   }
+}
+
+export async function handleScrape(env: Env, data: BSkyRecordTask, discordWebhook: DiscordWebhook=null) {
+  if (await scrapeBSkyRecord(env, data)) {
+    const fxURL = getFXURL(data.did, data.rkey);
+
+    // Valid records get stored and pushed to discord
+    await env.KV.put(data.rkey, fxURL);
+
+    // spin up a task to push to discord webhook later.
+    if (discordWebhook !== null)
+      await discordWebhook.send(fxURL);
+
+    console.log(`Successfully processed ${data.rkey}!`);
+    return true;
+  }
+  return false;
 }

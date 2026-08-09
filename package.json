@@ -9,6 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "dev_queue": "wrangler dev -c wrangler.toml --persist-to .wrangler/state --live-reload",
     "deploy": "wrangler deploy --minify",
     "types": "wrangler types src/types/wrangler.d.ts",
     "lint": "eslint"

@@ -21,11 +21,23 @@ binding = "KV"
 id = "743e785ed53f49cca04b90f105c0b84e"
 
 [triggers]
-crons = ["0 */1 * * *"] # run at every hour on the hour
+# run at every hour on the hour (if not using queues)
+#crons = ["0 */1 * * *"]
+# run every 5 minutes (if using queues)
+crons = ["*/5 * * * *"]
 
 [observability]
 enabled = true
 head_sampling_rate = 1
+
+[[queues.producers]]
+queue = "bsky-thread-watcher"
+binding = "THREAD_UPDATE_QUEUE"
+
+[[queues.consumers]]
+queue = "bsky-thread-watcher"
+max_batch_timeout = 3
+max_retries = 2
 
 # no webhook = no maidens
 [secrets]
@@ -42,6 +54,9 @@ MAX_RECURSE_DEPTH=2
 
 # this is the did for socksthewolf.com
 SKIP_DID="did:plc:2vueglf2njr5gvdbaf75ih6a"
+
+# if cf queues can be used, if so, then you've got much longer to process data (and can do it more frequently)
+USE_QUEUES = "true"
 
 # target post on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
