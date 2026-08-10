@@ -28,8 +28,8 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         let newRecords: number = globalTotal + 1;
 
         // @ts-expect-error - "true"/"false" type overlap
-        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true")
-          ctx.waitUntil(discordWebhook?.send(`Found ${recordDelta} new records`));
+        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && discordWebhook !== null)
+          ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {

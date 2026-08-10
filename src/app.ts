@@ -30,7 +30,7 @@ export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRe
 
     // spin up a task to push to discord webhook later.
     if (discordWebhook !== null)
-      await discordWebhook.send(fxURL);
+      ctx.waitUntil(discordWebhook.send(fxURL));
 
     console.log(`Successfully processed ${origData.rkey}!`);
     return true;
