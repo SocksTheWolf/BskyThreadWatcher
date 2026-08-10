@@ -5,7 +5,8 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   data: R2Types, metaData?: CustomR2Metadata): Promise<R2Object|null>
 {
   try {
-    return await env.R2.put(`${count.toString()} - ${user}/${fileName}`, data, {
+    const entryNumber: string = count.toString().padStart(3, "0");
+    return await env.R2.put(`${entryNumber} - ${user}/${fileName}`, data, {
       customMetadata: metaData
     });
   } catch (ex) {
@@ -19,7 +20,7 @@ export async function saveRecordText(env: Env, data: BSkyRecordTask, text: strin
 }
 
 export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
-    alt: string|undefined=undefined, aspectRatio:ImgAspectRatio|undefined=undefined): Promise<boolean>
+    alt?: string, aspectRatio?:ImgAspectRatio): Promise<boolean>
 {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${data.did}/${blobID}`;
   // Try to load it into memory
@@ -34,7 +35,7 @@ export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID
       "height": (aspectRatio?.height || 0).toString()
     };
     const uploadRes = await rawUploadToR2(env, data.recordNumber, data.username,
-      `${uuidv4()}.${mime.getExtension(mimeType)}`,
+      `${uuidv4()}.${mime.getExtension(mimeType) ?? "any"}`,
       await bigBlobRush.bytes(), metadataHold);
     return uploadRes !== null;
   } else {

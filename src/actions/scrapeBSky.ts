@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
 import type {
   AppBskyEmbedExternal, AppBskyEmbedGallery,
   AppBskyEmbedImages, AppBskyEmbedRecord,
   AppBskyEmbedRecordWithMedia, AppBskyFeedPost
 } from "@atcute/bluesky";
-import type { Blob, CidLink } from "@atcute/lexicons";
+import type { Blob } from "@atcute/lexicons";
 import isEmpty from "just-is-empty";
 import { fetchImageAndUpload, saveRecordText } from "../services/r2";
 import { getRecord } from "../urls";
@@ -22,6 +23,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     return false;
   }
 
+  // these need to convert because historically workers injects as a string
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
   const isFirstRecurse: boolean = data.recurseDepth <= 0;
@@ -30,7 +32,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   if (bskyRecord.ok) {
 
     const bskyRawRecord: RawRecord = await bskyRecord.json<RawRecord>();
-    const bskyRecordJson: AppBskyFeedPost.Main = bskyRawRecord.value;
+    const bskyRecordJson: AppBskyFeedPost.Main = bskyRawRecord.value as AppBskyFeedPost.Main;
 
     if (isFirstRecurse) {
       data.cid = bskyRawRecord.cid;
@@ -58,8 +60,8 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       const imgSchema: AppBskyEmbedImages.Main = (embedPoint as AppBskyEmbedImages.Main);
       for (const embedData of imgSchema.images) {
         // Grab a bunch of info for the image
-        const blob: Blob<string> = embedData.image as Blob<string>;
-        const blobID: string = (blob.ref as CidLink).$link;
+        const blob: Blob = embedData.image as Blob;
+        const blobID: string = (blob.ref).$link;
         const mimeType: string = embedData.image.mimeType;
         if (await fetchImageAndUpload(env, data, blobID, mimeType, embedData.alt, embedData.aspectRatio))
           console.log(`${data.rkey} - pulled image ${blobID} from image post`);
@@ -75,8 +77,8 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         if (count >= maxGalleryImages)
           continue;
 
-        const blob: Blob<string> = embedData.image as Blob<string>;
-        const blobID: string = (blob.ref as CidLink).$link;
+        const blob: Blob = embedData.image as Blob;
+        const blobID: string = (blob.ref).$link;
         const mimeType: string = embedData.image.mimeType;
         if (await fetchImageAndUpload(env, data,
             blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
@@ -87,7 +89,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     // Copy any external thumbnails and save those too
     } else if (mediaType === "app.bsky.embed.external") {
       const externalData: AppBskyEmbedExternal.External = (embedPoint as AppBskyEmbedExternal.External);
-      const thumbData: Blob<string>|undefined = externalData.thumb as Blob<string>|undefined;
+      const thumbData: Blob|undefined = externalData.thumb as Blob|undefined;
       if (thumbData !== undefined) {
         console.log(`${data.rkey} - found link media, pulling thumbnail`);
         await fetchImageAndUpload(env, data, thumbData.ref.$link, thumbData.mimeType);

@@ -17,7 +17,7 @@ remote = true
 # used for bookkeeping records, i.e. which posts we've seen
 [[kv_namespaces]]
 binding = "KV"
-id = "743e785ed53f49cca04b90f105c0b84e"
+id = "caf272d935da40e39b3e741f7bfd8faf"
 
 [triggers]
 crons = ["*/5 * * * *"]

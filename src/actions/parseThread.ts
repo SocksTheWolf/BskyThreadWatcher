@@ -1,6 +1,7 @@
 import isEmpty from "just-is-empty";
+import { lookupName } from "../services/bskyNameLookup";
 import type { DiscordWebhook } from "../services/discord";
-import { getRecordFeed, usernameLookup } from "../urls";
+import { getRecordFeed } from "../urls";
 
 export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread: string, discordWebhook: DiscordWebhook=null) {
   const allRecords = await fetch(getRecordFeed(thread), {
@@ -25,9 +26,10 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         }
         const previousRecordCount = (previousRecord?.total ?? 0);
         const recordDelta = totalRecords - previousRecordCount;
-        let newRecords: number = globalTotal + 1;
+        let newRecords: number = globalTotal;
 
         // @ts-expect-error - "true"/"false" type overlap
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && discordWebhook !== null)
           ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
 
@@ -45,23 +47,20 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
           }
 
           // Get the username
-          const username: string = await usernameLookup(record.did);
+          const username: string = await lookupName(record.did);
 
           // We have never seen this object in our life, ever.
           // "I know this, and I love you."
           const data: BSkyRecordTask = {
-            recordNumber: newRecords,
+            recordNumber: newRecords + 1,
             username: username,
             did: record.did,
             rkey: record.rkey,
             recurseDepth: 0
           };
 
-          if (await env.THREAD_UPDATE_QUEUE?.send(data, {contentType: 'v8'})) {
-            ++newRecords;
-          } else {
-            console.warn(`failed to process ${record.rkey}, skipped`);
-          }
+          await env.THREAD_UPDATE_QUEUE.send(data, {contentType: 'v8'})
+          ++newRecords;
         }
         // Save the last location that we were at
         console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);

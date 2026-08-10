@@ -5,7 +5,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
-  tseslint.configs.strict,
+  tseslint.configs.strictTypeChecked,
   globalIgnores(["src/types/*.d.ts"]),
   {
     languageOptions: {
@@ -14,6 +14,7 @@ export default defineConfig([
       },
     },
     rules: {
+      "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
