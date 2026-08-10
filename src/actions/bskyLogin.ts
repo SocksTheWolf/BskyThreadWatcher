@@ -6,7 +6,7 @@ export async function getBSkyAgent(env: Env): Promise<AtProtoAgentType> {
     return null;
 
   try {
-    const agent = new AtProtoAgent();
+    const agent = new AtProtoAgent(env);
     const loginResponse = await agent.login({
       identifier: env.BSKY_USERNAME,
       password: env.BSKY_APP_PASSWORD,
