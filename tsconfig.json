@@ -12,6 +12,7 @@
       "node",
       "@atcute/bluesky",
       "./src/types/types.d.ts",
+      "./src/types/discord.d.ts",
       "./src/types/wrangler.d.ts",
     ]
   },

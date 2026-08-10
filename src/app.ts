@@ -41,7 +41,7 @@ export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRe
 export async function checkThreadsForUpdates(env: Env, ctx: ExecutionContext) {
   const webhook: DiscordWebhook = getDiscordWebhook(env);
   // support multiple threads
-  for (const thread of env.TARGET.values) {
+  for (const thread of env.TARGET.threads) {
     await parseThreadUpdates(env, ctx, thread, webhook);
   }
 }

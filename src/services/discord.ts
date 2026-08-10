@@ -1,5 +1,4 @@
 import isEmpty from "just-is-empty";
-// @ts-expect-error 7016 - types export cannot be found
 import { Webhook } from "minimal-discord-webhook-node";
 
 export const getDiscordWebhook = (env: Env): DiscordWebhook => {

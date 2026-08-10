@@ -61,4 +61,4 @@ POST_RECORD_FINDINGS="false"
 
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
-TARGET={"values"=["at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22"]}
+TARGET={"threads"=["at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22"]}

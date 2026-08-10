@@ -5,8 +5,8 @@ import { checkThreadsForUpdates, handleScrape } from "./app";
 import type { DiscordWebhook } from "./services/discord";
 import { getDiscordWebhook } from "./services/discord";
 
-const hasThreadToWatch = (env: Env): boolean => {
-  return !isEmpty(env.TARGET.values);
+const hasThreadsToWatch = (env: Env): boolean => {
+  return !isEmpty(env.TARGET.threads);
 }
 
 export default {
@@ -14,14 +14,14 @@ export default {
     const requestedURL: URL = new URL(request.url);
 
     // only really useful for local debug
-    if (requestedURL.pathname == "/" && hasThreadToWatch(env))
+    if (requestedURL.pathname == "/" && hasThreadsToWatch(env))
       await checkThreadsForUpdates(env, ctx)
 
     return new Response("Hello, World");
   },
   async scheduled(_event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
     // no thread is set, get out.
-    if (!hasThreadToWatch(env))
+    if (!hasThreadsToWatch(env))
       return;
 
     await checkThreadsForUpdates(env, ctx);
