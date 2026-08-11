@@ -36,7 +36,7 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
           // skip any messages that are written by me
-          if (record.did === env.SKIP_DID)p
+          if (record.did === env.SKIP_DID)
             continue;
 
           // check if we have reviewed this record before
