@@ -28,7 +28,7 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         const recordDelta = totalRecords - previousRecordCount;
         let newRecords: number = globalTotal;
 
-        // @ts-expect-error - "true"/"false" type overlap
+        // @ts-expect-error - "true"/"false" type overlap due to how wrangler generates types
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && discordWebhook !== null)
           ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
@@ -36,7 +36,7 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
           // skip any messages that are written by me
-          if (record.did === env.SKIP_DID)
+          if (record.did === env.SKIP_DID)p
             continue;
 
           // check if we have reviewed this record before
@@ -46,14 +46,11 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
             break;
           }
 
-          // Get the username
-          const username: string = await lookupName(record.did);
-
           // We have never seen this object in our life, ever.
           // "I know this, and I love you."
           const data: BSkyRecordTask = {
             recordNumber: newRecords + 1,
-            username: username,
+            username: await lookupName(record.did),
             did: record.did,
             rkey: record.rkey,
             recurseDepth: 0
@@ -73,7 +70,7 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         // also put the global total in across all threads.
         await env.KV.put("global_total", newRecords.toString());
       } else {
-        console.log("NO RECORDS EXIST, OH DA MISERY.");
+        console.warn("NO RECORDS EXIST.");
       }
     } else {
       console.log("detected no changes in record");
