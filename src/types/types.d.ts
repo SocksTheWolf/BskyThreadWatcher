@@ -24,8 +24,8 @@ interface ImgAspectRatio {
 interface CustomR2Metadata extends Record<string, string> {
   user: string;
   type: string;
-  width: string;
-  height: string;
+  width?: string;
+  height?: string;
   alt?: string;
 };
 
