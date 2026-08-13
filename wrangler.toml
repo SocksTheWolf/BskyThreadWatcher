@@ -64,4 +64,4 @@ DEFAULT_PDS="https://bsky.social"
 
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
-TARGET={"threads"=["at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22"]}
+TARGET={"threads"=["at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mso2qdbtvl22", "at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3msxduqkcdk22"]}
