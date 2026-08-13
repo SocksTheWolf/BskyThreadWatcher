@@ -16,7 +16,11 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
 }
 
 export async function saveRecordText(env: Env, data: BSkyRecordTask, text: string) {
-  await rawUploadToR2(env, data.recordNumber, data.username, "post.txt", text);
+  const metaTextData: CustomR2Metadata = {
+      "user": data.username,
+      "type": "text/plain",
+    };
+    await rawUploadToR2(env, data.recordNumber, data.username, "post.txt", text, metaTextData);
 }
 
 export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
