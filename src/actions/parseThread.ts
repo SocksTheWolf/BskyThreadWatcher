@@ -74,7 +74,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           ++data.current_total;
         }
         // Sub-traversals should not write landmark data, so only write if we are main thread.
-        if (atCursor !== undefined) {
+        if (atCursor === undefined) {
           console.log(`${thread} - new landmark created, ${firstRKey}! Processed ${recordDelta} records`);
 
           const updatedKVRecord: LandmarkData = {
