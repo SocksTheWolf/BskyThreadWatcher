@@ -35,7 +35,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         const firstRKey: string = jsonInfo.linking_records[0].rkey;
         // check to see if any records are different
         if (previousRecord !== null && firstRKey == previousRecord.last_top_record) {
-          console.log("No new changes");
+          console.log(`${thread} - no new changes`);
           return;
         }
         const previousRecordCount = (previousRecord?.total ?? 0);
@@ -44,7 +44,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         // @ts-expect-error - "true"/"false" type overlap due to how wrangler generates types
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && data.webhook !== null)
-          ctx.waitUntil(data.webhook.send(`Found ${recordDelta} new records`));
+          ctx.waitUntil(data.webhook.send(`${thread} - found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
@@ -55,7 +55,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           // check if we have reviewed this record before
           const recordExists: string|null = await env.KV.get(record.rkey);
           if (recordExists !== null) {
-            console.log(`record ${record.rkey} exists, breaking out`);
+            console.log(`${thread} - record ${record.rkey} exists, breaking out`);
             break;
           }
 
@@ -75,7 +75,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         }
         // Sub-traversals should not write landmark data, so only write if we are main thread.
         if (atCursor !== undefined) {
-          console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);
+          console.log(`${thread} - new landmark created, ${firstRKey}! Processed ${recordDelta} records`);
 
           const updatedKVRecord: LandmarkData = {
             cursor: jsonInfo.cursor,
@@ -86,10 +86,10 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         }
 
       } else {
-        console.warn("NO RECORDS EXIST.");
+        console.warn(`${thread} - NO RECORDS EXIST.`);
       }
     } else {
-      console.log("detected no changes in record");
+      console.log(`${thread} - detected no changes in record`);
     }
   } else {
     console.warn(`${thread} - Unable to get current bsky records, got return: "${allRecords.status}"`);
