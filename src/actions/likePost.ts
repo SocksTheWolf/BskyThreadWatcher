@@ -7,7 +7,7 @@ export async function likeBskyPost(agent: AtProtoAgentType, data: BSkyRecordTask
     return false;
   }
 
-  console.log(`Attempting to like post ${data.uri} with cid ${data.cid}`);
+  //console.log(`Attempting to like post ${data.uri} with cid ${data.cid}`);
   try {
     await agent.like(data.uri, data.cid);
     return true;
