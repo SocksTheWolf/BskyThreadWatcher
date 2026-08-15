@@ -3,8 +3,8 @@ import { getRecordFeed } from "../consts";
 import { lookupName } from "../services/bskyNameLookup";
 import type { ParseThreadData } from "../types";
 
-export async function parseThread(env: Env, ctx: ExecutionContext, thread: string, data: ParseThreadData) {
-  const allRecords = await fetch(getRecordFeed(thread), {
+export async function parseThread(env: Env, ctx: ExecutionContext, thread: string, data: ParseThreadData, atCursor?: string) {
+  const allRecords = await fetch(getRecordFeed(thread, atCursor), {
     headers: {"Accept": "application/json"}
   });
   if (allRecords.ok) {
@@ -13,9 +13,22 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
 
     // this can never be a string return, only null or data.
     const previousRecord: LandmarkData|null = data.threadData.get(thread) as LandmarkData|null;
+    const hasPreviousRecord: boolean = (previousRecord !== null);
+
+    // if we have a record difference, it's time to dig deeper
+    const hasCursor: boolean = !isEmpty(atCursor);
+    const useCursor: string|null = (hasCursor) ? atCursor! : hasPreviousRecord ? previousRecord!.cursor : null;
+
+    // if we have a cursor and that cursor != the return's cursor
+    // or if we have a previous record, no cursor, and previous record does not equate to return.
+    if (useCursor !== null && useCursor != jsonInfo.cursor) {
+      console.log(`${thread} - traversing down using cursor: ${useCursor}`);
+      await parseThread(env, ctx, thread, data, jsonInfo.cursor);
+      // And then we'll parse from here.
+    }
 
     // I have no records oh god help me please
-    if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
+    if (previousRecord === null || previousRecord.total <= totalRecords || useCursor != jsonInfo.cursor) {
       // check number of records in this new swarm
       if (jsonInfo.linking_records.length > 0) {
         // get the first record for comparison
@@ -60,14 +73,18 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           await env.THREAD_UPDATE_QUEUE.send(newRecordTask, {contentType: 'v8'})
           ++data.current_total;
         }
-        // Save the last location that we were at
-        console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);
-        const updatedKVRecord: LandmarkData = {
-          cursor: jsonInfo.cursor,
-          total: jsonInfo.total,
-          last_top_record: firstRKey
-        };
-        await env.KV.put(thread, JSON.stringify(updatedKVRecord));
+        // Sub-traversals should not write landmark data, so only write if we are main thread.
+        if (atCursor !== undefined) {
+          console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);
+
+          const updatedKVRecord: LandmarkData = {
+            cursor: jsonInfo.cursor,
+            total: jsonInfo.total,
+            last_top_record: firstRKey
+          };
+          await env.KV.put(thread, JSON.stringify(updatedKVRecord));
+        }
+
       } else {
         console.warn("NO RECORDS EXIST.");
       }

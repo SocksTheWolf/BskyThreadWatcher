@@ -12,7 +12,6 @@ send_metrics = false
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "onlyuppies2"
-remote = true
 
 # used for bookkeeping records, i.e. which posts we've seen
 [[kv_namespaces]]
