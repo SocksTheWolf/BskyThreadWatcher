@@ -75,6 +75,6 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
       console.log("detected no changes in record");
     }
   } else {
-    console.warn(`Unable to get current bsky records, got return: "${allRecords.statusText}"`);
+    console.warn(`${thread} - Unable to get current bsky records, got return: "${allRecords.status}"`);
   }
 }
