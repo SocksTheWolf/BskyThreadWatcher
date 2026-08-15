@@ -5,7 +5,7 @@ export const getRecord = (did: string, rkey: string) => {
 export const getRecordFeed = (feed: string, cursor?: string|null) => {
   const url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(feed)}&collection=app.bsky.feed.post&path=.reply.parent.uri`;
   if (cursor !== undefined && cursor !== null) {
-    return url + `&cursor=${cursor}`;
+    return `${url}&cursor=${cursor}`;
   }
   return url;
 }
