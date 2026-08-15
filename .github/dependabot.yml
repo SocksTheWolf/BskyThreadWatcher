@@ -11,10 +11,9 @@ updates:
     groups:
       eslint:
         patterns:
-          - 'eslint'
-          - 'globals'
-          - 'jiti'
-          - 'typescript-eslint'
+          - "*eslint*"
+          - "globals"
+          - "jiti"
       working:
         patterns:
           - 'uuid'

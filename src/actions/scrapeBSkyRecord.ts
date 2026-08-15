@@ -44,7 +44,6 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     }
 
     let mediaType: string = bskyRecordJson.embed?.$type ?? "";
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let embedPoint: unknown = bskyRecordJson.embed!;
 
     // If we are a record with media, this is the furthest that we'll go and we'll
