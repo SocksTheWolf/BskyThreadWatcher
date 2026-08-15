@@ -1,9 +1,8 @@
 import isEmpty from "just-is-empty";
-import type { AtProtoAgentType } from "./actions/bskyLogin";
 import { getBSkyAgent } from "./actions/bskyLogin";
-import { checkThreadsForUpdates, handleScrape } from "./app";
-import type { DiscordWebhook } from "./services/discord";
+import { checkThreadsForUpdates, handleScrapeTask } from "./app";
 import { getDiscordWebhook } from "./services/discord";
+import type { AtProtoAgentType, DiscordWebhook } from "./types";
 
 const hasThreadsToWatch = (env: Env): boolean => {
   return !isEmpty(env.TARGET.threads);
@@ -31,7 +30,7 @@ export default {
     const bskyAgent: AtProtoAgentType = await getBSkyAgent(env)
     for (const message of batch.messages) {
       try {
-        await handleScrape(env, ctx, message.body, discordWebhook, bskyAgent);
+        await handleScrapeTask(env, ctx, message.body, discordWebhook, bskyAgent);
         message.ack();
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));

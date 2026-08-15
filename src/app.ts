@@ -1,12 +1,12 @@
 import clone from "just-clone";
-import type { AtProtoAgentType } from "./actions/bskyLogin";
 import { likeBskyPost } from "./actions/likePost";
-import { parseThreadUpdates } from "./actions/parseThread";
-import { scrapeBSkyRecord } from "./actions/scrapeBSky";
-import { getDiscordWebhook, type DiscordWebhook } from "./services/discord";
-import { getFXURL } from "./urls";
+import { parseThread } from "./actions/parseThread";
+import { scrapeBSkyRecord } from "./actions/scrapeBSkyRecord";
+import { getFXURL, total_key } from "./consts";
+import { getDiscordWebhook } from "./services/discord";
+import type { AtProtoAgentType, DiscordWebhook, ParseThreadData } from "./types";
 
-export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRecordTask,
+export async function handleScrapeTask(env: Env, ctx: ExecutionContext, data: BSkyRecordTask,
   discordWebhook: DiscordWebhook=null, bskyAgent: AtProtoAgentType=null)
 {
   // clone the original data because scrapeBskyRecord can potentially rewrite it.
@@ -38,10 +38,24 @@ export async function handleScrape(env: Env, ctx: ExecutionContext, data: BSkyRe
   return false;
 }
 
+
 export async function checkThreadsForUpdates(env: Env, ctx: ExecutionContext) {
-  const webhook: DiscordWebhook = getDiscordWebhook(env);
+  const threadData: Map<string, LandmarkData|null|string> = (await env.KV.get<LandmarkData|null>(env.TARGET.threads, "json"));
+  threadData.set(total_key, await env.KV.get(total_key, "text"));
+  const startingTotal = Number(threadData.get(total_key) ?? 0);
+
+  const data: ParseThreadData = {
+    webhook: getDiscordWebhook(env),
+    threadData: threadData,
+    current_total: startingTotal,
+  };
+
   // support multiple threads
   for (const thread of env.TARGET.threads) {
-    await parseThreadUpdates(env, ctx, thread, webhook);
+    await parseThread(env, ctx, thread, data);
   }
+
+  // update the new totals if they changed
+  if (startingTotal != data.current_total)
+    await env.KV.put(total_key, data.current_total.toString());
 }

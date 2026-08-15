@@ -65,3 +65,4 @@ interface AtProtoAgentLoginOptions {
 
 type R2Types = ReadableStream | ArrayBuffer | ArrayBufferView | string | null;
 type DIDLookupResult = DIDLookupFailure|DIDLookupSuccess;
+type KVThreadReturnResult = Map<string, LandmarkData|null|string>;

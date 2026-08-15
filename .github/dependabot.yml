@@ -8,9 +8,24 @@ updates:
       default-days: 10
       semver-major-days: 30
       semver-minor-days: 12
+    groups:
+      eslint:
+        patterns:
+          - 'eslint'
+          - 'globals'
+          - 'jiti'
+          - 'typescript-eslint'
+      working:
+        patterns:
+          - 'uuid'
+          - 'mime'
+          - '@atproto/api'
     ignore:
       - dependency-name: '@types/node'
         # Always get patch and minor versions of node types
         update-types:
           - 'version-update:semver-major'
       - dependency-name: 'wrangler'
+      - dependency-name: '@atproto/api'
+        update-types:
+          - 'version-update:semver-patch'

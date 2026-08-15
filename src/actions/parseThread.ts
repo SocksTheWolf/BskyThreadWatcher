@@ -1,18 +1,19 @@
 import isEmpty from "just-is-empty";
+import { getRecordFeed } from "../consts";
 import { lookupName } from "../services/bskyNameLookup";
-import type { DiscordWebhook } from "../services/discord";
-import { getRecordFeed } from "../urls";
+import type { ParseThreadData } from "../types";
 
-export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread: string, discordWebhook: DiscordWebhook=null) {
+export async function parseThread(env: Env, ctx: ExecutionContext, thread: string, data: ParseThreadData) {
   const allRecords = await fetch(getRecordFeed(thread), {
     headers: {"Accept": "application/json"}
   });
   if (allRecords.ok) {
     const jsonInfo: ATRecordBlob = await allRecords.json<ATRecordBlob>();
-    const previousRecord: LandmarkData|null = await env.KV.get(thread, "json");
-    const globalTotalStr: string|null = await env.KV.get("global_total", "text");
-    const globalTotal: number = globalTotalStr !== null ? Number(globalTotalStr) : 0;
     const totalRecords = jsonInfo.total;
+
+    // this can never be a string return, only null or data.
+    const previousRecord: LandmarkData|null = data.threadData.get(thread) as LandmarkData|null;
+
     // I have no records oh god help me please
     if (previousRecord === null || previousRecord.total <= totalRecords || previousRecord.cursor != jsonInfo.cursor) {
       // check number of records in this new swarm
@@ -26,12 +27,11 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
         }
         const previousRecordCount = (previousRecord?.total ?? 0);
         const recordDelta = totalRecords - previousRecordCount;
-        let newRecords: number = globalTotal;
 
         // @ts-expect-error - "true"/"false" type overlap due to how wrangler generates types
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && discordWebhook !== null)
-          ctx.waitUntil(discordWebhook.send(`Found ${recordDelta} new records`));
+        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && data.webhook !== null)
+          ctx.waitUntil(data.webhook.send(`Found ${recordDelta} new records`));
 
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
@@ -48,16 +48,17 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
 
           // We have never seen this object in our life, ever.
           // "I know this, and I love you."
-          const data: BSkyRecordTask = {
-            recordNumber: newRecords + 1,
+          const newRecordTask: BSkyRecordTask = {
+            recordNumber: data.current_total + 1,
             username: await lookupName(record.did),
             did: record.did,
             rkey: record.rkey,
             recurseDepth: 0
           };
 
-          await env.THREAD_UPDATE_QUEUE.send(data, {contentType: 'v8'})
-          ++newRecords;
+          // push to the queue
+          await env.THREAD_UPDATE_QUEUE.send(newRecordTask, {contentType: 'v8'})
+          ++data.current_total;
         }
         // Save the last location that we were at
         console.log(`New Landmark record created ${firstRKey}! Processed ${recordDelta} records`);
@@ -67,8 +68,6 @@ export async function parseThreadUpdates(env: Env, ctx: ExecutionContext, thread
           last_top_record: firstRKey
         };
         await env.KV.put(thread, JSON.stringify(updatedKVRecord));
-        // also put the global total in across all threads.
-        await env.KV.put("global_total", newRecords.toString());
       } else {
         console.warn("NO RECORDS EXIST.");
       }

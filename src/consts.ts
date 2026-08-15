@@ -13,3 +13,6 @@ export const getFXURL = (did: string, rkey: string) => {
 export const usernameLookup = (did: string) => {
   return `https://plc.directory/${did}`;
 }
+
+// the key used for keeping track of the global total of thread records
+export const total_key = "global_total";

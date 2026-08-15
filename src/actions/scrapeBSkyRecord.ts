@@ -7,7 +7,7 @@ import type {
 import type { Blob } from "@atcute/lexicons";
 import isEmpty from "just-is-empty";
 import { fetchImageAndUpload, saveRecordText } from "../services/r2";
-import { getRecord } from "../urls";
+import { getRecord } from "../consts";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 

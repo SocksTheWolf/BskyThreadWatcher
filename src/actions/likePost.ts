@@ -1,5 +1,5 @@
 import isEmpty from "just-is-empty";
-import type { AtProtoAgentType } from "../actions/bskyLogin";
+import type { AtProtoAgentType } from "../types";
 import { getBSkyAgent } from "./bskyLogin";
 
 export async function likeBskyPost(agent: AtProtoAgentType, data: BSkyRecordTask) {

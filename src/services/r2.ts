@@ -7,7 +7,10 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   try {
     const entryNumber: string = count.toString().padStart(3, "0");
     return await env.R2.put(`${entryNumber} - ${user}/${fileName}`, data, {
-      customMetadata: metaData
+      customMetadata: metaData,
+      httpMetadata: {
+        contentType: metaData?.type
+      }
     });
   } catch (ex) {
     console.error(`Failed to upload to R2, got: ` + String(ex));

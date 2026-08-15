@@ -1,5 +1,6 @@
 import isEmpty from "just-is-empty";
 import { AtProtoAgent } from "../services/bskyAgent";
+import type { AtProtoAgentType } from "../types";
 
 export async function getBSkyAgent(env: Env): Promise<AtProtoAgentType> {
   if (isEmpty(env.BSKY_APP_PASSWORD))
@@ -20,5 +21,3 @@ export async function getBSkyAgent(env: Env): Promise<AtProtoAgentType> {
   }
   return null;
 }
-
-export type AtProtoAgentType = AtProtoAgent|null;
