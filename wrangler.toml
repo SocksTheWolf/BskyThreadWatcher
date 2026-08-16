@@ -33,7 +33,7 @@ binding = "THREAD_UPDATE_QUEUE"
 queue = "bsky-thread-watcher"
 max_batch_size = 3
 max_batch_timeout = 3
-max_retries = 2
+max_retries = 10
 
 # no webhook = no maidens
 [secrets]

@@ -34,7 +34,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         // get the first record for comparison
         const firstRKey: string = jsonInfo.linking_records[0].rkey;
         // check to see if any records are different
-        if (previousRecord !== null && firstRKey == previousRecord.last_top_record) {
+        if (hasPreviousRecord && firstRKey == previousRecord!.last_top_record) {
           console.log(`${thread} - no new changes`);
           return;
         }
@@ -52,11 +52,17 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           if (record.did === env.SKIP_DID)
             continue;
 
+          // if we have hit the last landmark we need to get out
+          if (hasPreviousRecord && record.rkey === previousRecord!.last_top_record) {
+            console.log(`${thread} - processed all posts up until last record, breaking out`);
+            break;
+          }
+
           // check if we have reviewed this record before
           const recordExists: string|null = await env.KV.get(record.rkey);
           if (recordExists !== null) {
-            console.log(`${thread} - record ${record.rkey} exists, breaking out`);
-            break;
+            console.log(`${thread} - record ${record.rkey} exists, skipping`);
+            continue;
           }
 
           // We have never seen this object in our life, ever.

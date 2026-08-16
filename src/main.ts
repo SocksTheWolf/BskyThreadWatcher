@@ -30,8 +30,10 @@ export default {
     const bskyAgent: AtProtoAgentType = await getBSkyAgent(env)
     for (const message of batch.messages) {
       try {
-        await handleScrapeTask(env, ctx, message.body, discordWebhook, bskyAgent);
-        message.ack();
+        if (await handleScrapeTask(env, ctx, message.body, discordWebhook, bskyAgent))
+          message.ack();
+        else
+          message.retry({delaySeconds: 20 });
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));
         message.retry();
