@@ -7,8 +7,8 @@ import { getDiscordWebhook } from "./services/discord";
 import type { AtProtoAgentType, DiscordWebhook, ParseThreadData } from "./types";
 
 export async function handleScrapeTask(env: Env, ctx: ExecutionContext, data: BSkyRecordTask,
-  discordWebhook: DiscordWebhook=null, bskyAgent: AtProtoAgentType=null)
-{
+  discordWebhook: DiscordWebhook=null, bskyAgent: AtProtoAgentType=null) {
+
   // clone the original data because scrapeBskyRecord can potentially rewrite it.
   const origData: BSkyRecordTask = clone(data);
 

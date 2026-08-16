@@ -51,6 +51,7 @@ interface BSkyRecordTask {
   username: string;
   did: string;
   rkey: string;
+  thread: string;
   // filled in by scrapeBSkyRecord
   uri?: string;
   cid?: string;

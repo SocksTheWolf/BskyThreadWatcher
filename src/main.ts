@@ -27,13 +27,20 @@ export default {
   },
   async queue(batch: MessageBatch<BSkyRecordTask>, env: Env, ctx: ExecutionContext) {
     const discordWebhook: DiscordWebhook = getDiscordWebhook(env);
-    const bskyAgent: AtProtoAgentType = await getBSkyAgent(env)
+    const bskyAgent: AtProtoAgentType = await getBSkyAgent(env);
+    const maxRetryAttempts: number = Number(env.MAX_SCRAPE_ATTEMPTS);
     for (const message of batch.messages) {
       try {
         if (await handleScrapeTask(env, ctx, message.body, discordWebhook, bskyAgent))
           message.ack();
-        else
-          message.retry({delaySeconds: 20 });
+        else if (message.attempts + 1 >= maxRetryAttempts) {
+          // If a scrape task is about to hit the max, send a message to the webhook that a message is about to fail
+          if (discordWebhook !== null) {
+            await discordWebhook.send(`${message.body.thread} - had failed fetch post for ${message.body.rkey}`);
+          }
+        } else {
+          message.retry();
+        }
       } catch (err) {
         console.error("Failed to process message, got error: " + String(err));
         message.retry();

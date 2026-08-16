@@ -33,6 +33,7 @@ binding = "THREAD_UPDATE_QUEUE"
 queue = "bsky-thread-watcher"
 max_batch_size = 3
 max_batch_timeout = 3
+retry_delay = 20
 max_retries = 10
 
 # no webhook = no maidens
@@ -60,6 +61,9 @@ POST_RECORD_FINDINGS="false"
 
 # what PDS to use to log into the network
 DEFAULT_PDS="https://bsky.social"
+
+# max scraping attempts, this should match whatever your queue.consumer.max_retries is set to
+MAX_SCRAPE_ATTEMPTS = 10
 
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)

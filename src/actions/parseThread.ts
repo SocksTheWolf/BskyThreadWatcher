@@ -72,6 +72,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
             username: await lookupName(record.did),
             did: record.did,
             rkey: record.rkey,
+            thread: thread,
             recurseDepth: 0
           };
 
