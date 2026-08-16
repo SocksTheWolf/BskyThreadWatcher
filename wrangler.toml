@@ -63,7 +63,7 @@ POST_RECORD_FINDINGS="false"
 DEFAULT_PDS="https://bsky.social"
 
 # max scraping attempts, this should match whatever your queue.consumer.max_retries is set to
-MAX_SCRAPE_ATTEMPTS = 10
+MAX_SCRAPE_ATTEMPTS = "10"
 
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
