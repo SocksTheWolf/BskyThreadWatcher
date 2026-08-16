@@ -1,4 +1,4 @@
-# BskyThreadWatcher
+# Bluesky Thread Watcher
 
 A microservice/runner that scrapes all the replies to a given post (or posts).
 
@@ -35,7 +35,6 @@ No videos and no support for quote replies. While QRTs could be handy, anyone wh
 Because firehose is overkill, this instead listens to a filtered system called "constellation" [provided by Microcosm](https://constellation.microcosm.blue).
 
 While this does mean that the system is basically a glorified polling feature, it does allow for more portability and less compute cost.
-
 
 ---
 Used for [OnlyUppies 4](https://onlyuppies.com)
