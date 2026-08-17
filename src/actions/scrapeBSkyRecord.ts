@@ -8,19 +8,20 @@ import type { Blob } from "@atcute/lexicons";
 import isEmpty from "just-is-empty";
 import { fetchImageAndUpload, saveRecordText } from "../services/r2";
 import { getRecord } from "../consts";
+import { ScrapeResult } from "../types";
 
 const bskyPostRecordCapture = /at:\/\/(.*)\/app\.bsky\.feed\.post\/(.*)$/;
 
-export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<boolean> {
+export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<ScrapeResult> {
   if (data.did === env.SKIP_DID) {
     console.log(`${data.rkey} - was a post by a skip author, bailing`);
-    return false;
+    return ScrapeResult.SkipAuthor;
   }
 
   // if the record was somehow invalid, break out now. Do not continue.
   if (isEmpty(data.did) || isEmpty(data.rkey)) {
     console.warn("data provided was invalid, breaking out.");
-    return false;
+    return ScrapeResult.InvalidData;
   }
 
   // these need to convert because historically workers injects as a string
@@ -94,7 +95,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         await fetchImageAndUpload(env, data, thumbData.ref.$link, thumbData.mimeType);
       } else {
         console.warn(`${data.rkey} - Unable to get thumb data ${data.username}`);
-        return false;
+        return ScrapeResult.Failed;
       }
     // This is a quote post, just let it go to something...
     // I don't know if it makes sense to error on links with no thumbs...
@@ -102,14 +103,14 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       if (data.recurseDepth >= maxRecurseDepth) {
         console.warn(`${data.rkey} - hit max record recurse depth, bailing`);
         // I'm not sure if I want to return true or false for this case...
-        return false;
+        return ScrapeResult.NoMedia;
       }
       const externalSchema: AppBskyEmbedRecord.Main = (embedPoint as AppBskyEmbedRecord.Main);
       const recordURI = externalSchema.record.uri;
       // check to see if we have a suitable embed
       if (!bskyPostRecordCapture.test(recordURI)) {
         console.error(`${data.rkey} - while traversing, the record embed was not viable ${recordURI}`);
-        return false;
+        return ScrapeResult.NoMedia;
       }
       // Recurse and find a post that's valid.
       const newData = data;
@@ -122,16 +123,16 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         // if we have a match but somehow the capture group doesn't give us the rkey, then
         // just stop traversing
         console.warn(ex);
-        return false;
+        return ScrapeResult.NoMedia;
       }
       return await scrapeBSkyRecord(env, newData);
     } else {
       console.log(`${data.rkey} - NO IMAGE BASED DATA FOUND, SKIPPING`);
-      return false;
+      return ScrapeResult.NoMedia;
     }
-    return true;
+    return ScrapeResult.Success;
   } else {
     console.error(`${data.rkey} - Could not fetch record for post`);
-    return false;
+    return ScrapeResult.Failed;
   }
 }

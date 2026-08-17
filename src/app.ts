@@ -4,10 +4,10 @@ import { parseThread } from "./actions/parseThread";
 import { scrapeBSkyRecord } from "./actions/scrapeBSkyRecord";
 import { getFXURL, total_key } from "./consts";
 import { getDiscordWebhook } from "./services/discord";
-import type { AtProtoAgentType, DiscordWebhook, ParseThreadData } from "./types";
+import { ScrapeResult, type AtProtoAgentType, type DiscordWebhook, type ParseThreadData } from "./types";
 
 export async function handleScrapeTask(env: Env, ctx: ExecutionContext, data: BSkyRecordTask,
-  discordWebhook: DiscordWebhook=null, bskyAgent: AtProtoAgentType=null) {
+  discordWebhook: DiscordWebhook=null, bskyAgent: AtProtoAgentType=null): Promise<boolean> {
 
   // clone the original data because scrapeBskyRecord can potentially rewrite it.
   const origData: BSkyRecordTask = clone(data);
@@ -19,7 +19,8 @@ export async function handleScrapeTask(env: Env, ctx: ExecutionContext, data: BS
     return true;
   }
 
-  if (await scrapeBSkyRecord(env, data)) {
+  const scrapeResult = await scrapeBSkyRecord(env, data);
+  if (scrapeResult == ScrapeResult.Success) {
     const fxURL = getFXURL(origData.did, origData.rkey);
 
     // Valid records get stored and pushed to discord
@@ -33,6 +34,8 @@ export async function handleScrapeTask(env: Env, ctx: ExecutionContext, data: BS
       ctx.waitUntil(discordWebhook.send(fxURL));
 
     console.log(`Successfully processed ${origData.rkey}!`);
+    return true;
+  } else if (scrapeResult == ScrapeResult.NoMedia || scrapeResult === ScrapeResult.SkipAuthor) {
     return true;
   }
   return false;

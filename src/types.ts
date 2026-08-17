@@ -9,3 +9,11 @@ export interface ParseThreadData {
   threadData: Map<string, LandmarkData|string|null>;
   current_total: number;
 }
+
+export enum ScrapeResult {
+  Failed,
+  Success,
+  NoMedia,
+  SkipAuthor,
+  InvalidData,
+}
