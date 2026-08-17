@@ -36,7 +36,7 @@ export default {
         else if (message.attempts + 1 >= maxRetryAttempts) {
           // If a scrape task is about to hit the max, send a message to the webhook that a message is about to fail
           if (discordWebhook !== null) {
-            await discordWebhook.send(`${message.body.thread} - had failed fetch post for ${message.body.rkey}`);
+            await discordWebhook.send(`\`${message.body.thread}\` - had failed fetch post for \`${message.body.rkey}\``);
           }
         } else {
           message.retry();
