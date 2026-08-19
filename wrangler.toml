@@ -66,6 +66,9 @@ POST_RECORD_FINDINGS="false"
 # what PDS to use to log into the network
 DEFAULT_PDS="https://bsky.social"
 
+# Custom user agent string
+USER_AGENT="OnlyUppies4Fetcher"
+
 # max scraping attempts, this should match whatever your queue.consumer.max_retries is set to
 MAX_SCRAPE_ATTEMPTS = "10"
 
