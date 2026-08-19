@@ -124,7 +124,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       } catch (ex: unknown) {
         // if we have a match but somehow the capture group doesn't give us the rkey, then
         // just stop traversing
-        console.warn(ex);
+        console.warn("encountered exception while trying to pull post record regex " + String(ex));
         return ScrapeResult.NoMedia;
       }
       return await scrapeBSkyRecord(env, newData);

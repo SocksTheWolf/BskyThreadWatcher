@@ -11,7 +11,7 @@ export async function likeBskyPost(agent: AtProtoAgentType, data: BSkyRecordTask
   try {
     await agent.like(data.uri, data.cid);
     return true;
-  } catch(ex) {
+  } catch (ex: unknown) {
     console.warn(`Unable to like record ${data.rkey}, got err: ` + String(ex));
   }
   return false;

@@ -16,7 +16,7 @@ export async function getBSkyAgent(env: Env): Promise<AtProtoAgentType> {
       return agent;
     }
     console.warn(`Could not login to atproto, got data ${loginResponse.data.status}`);
-  } catch(ex) {
+  } catch (ex: unknown) {
     console.warn(`Unable to bsky account, got err: ` + String(ex));
   }
   return null;

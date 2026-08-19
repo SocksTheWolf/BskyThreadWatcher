@@ -41,7 +41,7 @@ export default {
         } else {
           message.retry();
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to process message, got error: " + String(err));
         message.retry();
       }

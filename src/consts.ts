@@ -18,5 +18,9 @@ export const usernameLookup = (did: string) => {
   return `https://plc.directory/${did}`;
 }
 
+export const getBlobURL = (did: string, blobID: string) => {
+  return `https://cdn.bsky.app/img/download/plain/${did}/${blobID}`;
+}
+
 // the key used for keeping track of the global total of thread records
 export const total_key = "global_total";

@@ -1,5 +1,6 @@
 import mime from 'mime/lite';
 import { v4 as uuidv4 } from 'uuid';
+import { getBlobURL } from '../consts';
 
 async function rawUploadToR2(env: Env, count: number, user: string, fileName: string,
   data: R2Types, metaData?: CustomR2Metadata): Promise<R2Object|null>
@@ -12,7 +13,7 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
         contentType: metaData?.type
       }
     });
-  } catch (ex) {
+  } catch (ex: unknown) {
     console.error(`Failed to upload to R2, got: ` + String(ex));
   }
   return null;
@@ -29,9 +30,8 @@ export async function saveRecordText(env: Env, data: BSkyRecordTask, text: strin
 export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
     alt?: string, aspectRatio?:ImgAspectRatio): Promise<boolean>
 {
-  const blobURL: string = `https://cdn.bsky.app/img/download/plain/${data.did}/${blobID}`;
   // Try to load it into memory
-  const bigBlobRush = await fetch(blobURL, {
+  const bigBlobRush = await fetch(getBlobURL(data.did, blobID), {
     headers: { "Content-Type": mimeType, "User-Agent": env.USER_AGENT }
   });
 
