@@ -21,8 +21,8 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
 
     // if we have a cursor and that cursor != the return's cursor
     // or if we have a previous record, no cursor, and previous record does not equate to return.
-    if (useCursor !== null && useCursor != jsonInfo.cursor) {
-      console.log(`${thread} - traversing down using cursor: ${useCursor}`);
+    if (jsonInfo.cursor !== null && useCursor !== null && useCursor !== jsonInfo.cursor) {
+      console.log(`${thread} - traversing down using cursor: ${useCursor} got ${jsonInfo.cursor} to follow`);
       await parseThread(env, ctx, thread, data, jsonInfo.cursor);
       // And then we'll parse from here.
     }
@@ -61,8 +61,13 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           // check if we have reviewed this record before
           const recordExists: string|null = await env.KV.get(record.rkey);
           if (recordExists !== null) {
-            console.log(`${thread} - record ${record.rkey} exists, skipping`);
-            continue;
+            if (hasCursor) {
+              console.log(`${thread} - record ${record.rkey} exists, with cursor ${useCursor}, breaking out`);
+              break;
+            } else {
+              console.log(`${thread} - record ${record.rkey} exists, skipping`);
+              continue;
+            }
           }
 
           // We have never seen this object in our life, ever.
@@ -85,7 +90,7 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
           console.log(`${thread} - new landmark created, ${firstRKey}! Processed ${recordDelta} records`);
 
           const updatedKVRecord: LandmarkData = {
-            cursor: jsonInfo.cursor,
+            cursor: jsonInfo.cursor ?? "",
             total: jsonInfo.total,
             last_top_record: firstRKey
           };

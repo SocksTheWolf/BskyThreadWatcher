@@ -5,7 +5,7 @@ interface ATRecord {
 };
 
 interface ATRecordBlob {
-  cursor: string;
+  cursor: string|null;
   total: number;
   linking_records: ATRecord[]
 };
