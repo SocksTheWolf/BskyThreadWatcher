@@ -25,6 +25,10 @@ crons = ["*/5 * * * *"]
 enabled = true
 head_sampling_rate = 1
 
+# 30s CPU limit
+[limits]
+cpu_ms = 30000
+
 [[queues.producers]]
 queue = "bsky-thread-watcher"
 binding = "THREAD_UPDATE_QUEUE"
