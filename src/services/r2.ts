@@ -31,7 +31,10 @@ export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID
 {
   const blobURL: string = `https://cdn.bsky.app/img/download/plain/${data.did}/${blobID}`;
   // Try to load it into memory
-  const bigBlobRush = await fetch(blobURL, {headers: {"Content-Type": mimeType} });
+  const bigBlobRush = await fetch(blobURL, {
+    headers: { "Content-Type": mimeType, "User-Agent": env.USER_AGENT }
+  });
+
   if (bigBlobRush.ok) {
     // dump it on R2
     const metadataHold: CustomR2Metadata = {

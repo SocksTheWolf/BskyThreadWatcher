@@ -29,9 +29,11 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
   const isFirstRecurse: boolean = data.recurseDepth <= 0;
   // BIG TIME RUSH FETCH RECORD
-  const bskyRecord = await fetch(getRecord(data.did, data.rkey));
-  if (bskyRecord.ok) {
+  const bskyRecord = await fetch(getRecord(data.did, data.rkey), {
+    headers: { "User-Agent": env.USER_AGENT }
+  });
 
+  if (bskyRecord.ok) {
     const bskyRawRecord: RawRecord = await bskyRecord.json<RawRecord>();
     const bskyRecordJson: AppBskyFeedPost.Main = bskyRawRecord.value as AppBskyFeedPost.Main;
 

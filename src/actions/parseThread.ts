@@ -5,8 +5,9 @@ import type { ParseThreadData } from "../types";
 
 export async function parseThread(env: Env, ctx: ExecutionContext, thread: string, data: ParseThreadData, atCursor?: string) {
   const allRecords = await fetch(getRecordFeed(thread, atCursor), {
-    headers: {"Accept": "application/json"}
+    headers: { "Accept": "application/json", "User-Agent": env.USER_AGENT },
   });
+
   if (allRecords.ok) {
     const jsonInfo: ATRecordBlob = await allRecords.json<ATRecordBlob>();
     const totalRecords = jsonInfo.total;
