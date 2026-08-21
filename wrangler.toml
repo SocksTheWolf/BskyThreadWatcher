@@ -27,7 +27,7 @@ head_sampling_rate = 1
 
 # Comment this out if you don't have a tail logger
 [[tail_consumers]]
-service = "taillog"
+service = "taillogger"
 
 # 30s CPU limit
 [limits]
