@@ -25,6 +25,10 @@ crons = ["*/5 * * * *"]
 enabled = true
 head_sampling_rate = 1
 
+# Comment this out if you don't have a tail logger
+[[tail_consumers]]
+service = "taillog"
+
 # 30s CPU limit
 [limits]
 cpu_ms = 30000
