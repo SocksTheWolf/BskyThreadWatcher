@@ -1,0 +1,17 @@
+# Cleans up previous GH action queues
+name: Mirror To Tangled
+on:
+  push:
+    branches: "main"
+
+permissions:
+  # To read the current repo so that we can push to tangled
+  contents: read
+  # To clean the deployments
+  deployments: write
+
+jobs:
+  run:
+    name: Deploy
+    uses: socksthewolf/workflows/.github/workflows/deploy_tangled.yml@main
+    secrets: inherit
