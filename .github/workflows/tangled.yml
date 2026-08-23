@@ -15,5 +15,4 @@ jobs:
   run:
     name: Deploy
     uses: socksthewolf/workflows/.github/workflows/deploy_tangled.yml@main
-    secrets:
-      KEY: ${{ secrets.KEY }}
+    secrets: inherit
