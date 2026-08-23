@@ -37,4 +37,4 @@ Because firehose is overkill, this instead listens to a filtered system called "
 While this does mean that the system is basically a glorified polling feature, it does allow for more portability and less compute cost.
 
 ---
-Used for [OnlyUppies 4](https://onlyuppies.com)
+Used for [OnlyUppies 4](https://onlyuppies.com), [mirrored on Tangled](https://tangled.org/socksthewolf.com/bskythreadwatcher/)
