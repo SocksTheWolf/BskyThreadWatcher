@@ -1,6 +1,7 @@
 # Cleans up previous GH action queues
 name: Mirror To Tangled
 on:
+  workflow_dispatch: {}
   push:
     branches: "main"
 
