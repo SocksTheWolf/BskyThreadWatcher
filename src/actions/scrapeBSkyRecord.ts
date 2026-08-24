@@ -27,6 +27,7 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
   // these need to convert because historically workers injects as a string
   const maxGalleryImages: number = Number(env.MAX_GALLERY_IMAGES);
   const maxRecurseDepth: number = Number(env.MAX_RECURSE_DEPTH);
+  const maxPullAttempts: number = Number(env.MAX_DOWNLOAD_ATTEMPTS);
   const isFirstRecurse: boolean = data.recurseDepth <= 0;
   // BIG TIME RUSH FETCH RECORD
   const bskyRecord = await fetch(getRecord(data.did, data.rkey), {
@@ -65,10 +66,14 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         const blob: Blob = embedData.image as Blob;
         const blobID: string = (blob.ref).$link;
         const mimeType: string = embedData.image.mimeType;
-        if (await fetchImageAndUpload(env, data, blobID, mimeType, embedData.alt, embedData.aspectRatio))
-          console.log(`${data.rkey} - pulled image ${blobID} from image post`);
-        else
-          console.warn(`${data.rkey} - could not pull image ${blobID} from image post!`);
+        for (let attempt = 0; attempt < maxPullAttempts; ++attempt) {
+          if (await fetchImageAndUpload(env, data, blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
+            console.log(`${data.rkey} - pulled image ${blobID} from image post`);
+            break;
+          } else {
+            console.warn(`${data.rkey} - could not pull image ${blobID} from image post! ${attempt}/${maxPullAttempts}`);
+          }
+        }
       }
     // Handle Galleries
     } else if (mediaType === "app.bsky.embed.gallery") {
@@ -82,10 +87,14 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
         const blob: Blob = embedData.image as Blob;
         const blobID: string = (blob.ref).$link;
         const mimeType: string = embedData.image.mimeType;
-        if (await fetchImageAndUpload(env, data,
-            blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
-          ++count;
-          console.log(`${data.rkey} - got ${count} image from a gallery`)
+        for (let attempt = 0; attempt < maxPullAttempts; ++attempt) {
+          if (await fetchImageAndUpload(env, data, blobID, mimeType, embedData.alt, embedData.aspectRatio)) {
+            ++count;
+            console.log(`${data.rkey} - got ${count} image from a gallery`);
+            break;
+          } else {
+            console.warn(`${data.rkey} - could not pull gallery image ${blobID} from image post! ${attempt}/${maxPullAttempts}`);
+          }
         }
       }
     // Copy any external thumbnails and save those too
@@ -94,7 +103,11 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
       const thumbData: Blob|undefined = externalData.thumb as Blob|undefined;
       if (thumbData !== undefined) {
         console.log(`${data.rkey} - found link media, pulling thumbnail`);
-        await fetchImageAndUpload(env, data, thumbData.ref.$link, thumbData.mimeType);
+        for (let attempt = 0; attempt < maxPullAttempts; ++attempt) {
+          if (await fetchImageAndUpload(env, data, thumbData.ref.$link, thumbData.mimeType)) {
+            break;
+          }
+        }
       } else {
         console.warn(`${data.rkey} - Unable to get thumb data ${data.username}`);
         return ScrapeResult.Failed;

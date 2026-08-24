@@ -76,6 +76,9 @@ USER_AGENT="OnlyUppies4Fetcher"
 # max scraping attempts, this should match whatever your queue.consumer.max_retries is set to
 MAX_SCRAPE_ATTEMPTS = "10"
 
+# Max amount of times to pull down an image
+MAX_DOWNLOAD_ATTEMPTS = "3"
+
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
 TARGET={"threads"=[
