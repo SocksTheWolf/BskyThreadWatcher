@@ -20,7 +20,7 @@ export default {
   },
   async scheduled(_event: ScheduledEvent|null, env: Env, ctx: ExecutionContext) {
     // no thread is set, get out.
-    if (!hasThreadsToWatch(env))
+    if (!hasThreadsToWatch(env) || env.ENABLED !== "true")
       return;
 
     await checkThreadsForUpdates(env, ctx);

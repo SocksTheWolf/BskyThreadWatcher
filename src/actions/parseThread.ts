@@ -42,11 +42,6 @@ export async function parseThread(env: Env, ctx: ExecutionContext, thread: strin
         const previousRecordCount = (previousRecord?.total ?? 0);
         const recordDelta = totalRecords - previousRecordCount;
 
-        // @ts-expect-error - "true"/"false" type overlap due to how wrangler generates types
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!isEmpty(env.WEBHOOK) && env.POST_RECORD_FINDINGS === "true" && data.webhook !== null)
-          ctx.waitUntil(data.webhook.send(`${thread} - found ${recordDelta} new records`));
-
         // Go until we find a record we've already processed.
         for (const record of jsonInfo.linking_records) {
           // skip any messages that are written by me
