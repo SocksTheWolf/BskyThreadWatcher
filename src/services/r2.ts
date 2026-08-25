@@ -1,3 +1,4 @@
+import isEmpty from 'just-is-empty';
 import mime from 'mime/lite';
 import { v4 as uuidv4 } from 'uuid';
 import { getBlobURL } from '../consts';
@@ -19,12 +20,12 @@ async function rawUploadToR2(env: Env, count: number, user: string, fileName: st
   return null;
 }
 
-export async function saveRecordText(env: Env, data: BSkyRecordTask, text: string) {
+export async function saveRecordText(env: Env, data: BSkyRecordTask, text: string, fileName:string="post.txt") {
   const metaTextData: CustomR2Metadata = {
       "user": data.username,
       "type": "text/plain",
     };
-    await rawUploadToR2(env, data.recordNumber, data.username, "post.txt", text, metaTextData);
+    await rawUploadToR2(env, data.recordNumber, data.username, fileName, text, metaTextData);
 }
 
 export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID: string, mimeType: string,
@@ -44,9 +45,14 @@ export async function fetchImageAndUpload(env: Env, data: BSkyRecordTask, blobID
       "alt": alt ?? "",
       "height": (aspectRatio?.height || 0).toString()
     };
+    const imageName = uuidv4();
     const uploadRes = await rawUploadToR2(env, data.recordNumber, data.username,
-      `${uuidv4()}.${mime.getExtension(mimeType) ?? "any"}`,
+      `${imageName}.${mime.getExtension(mimeType) ?? "any"}`,
       await bigBlobRush.bytes(), metadataHold);
+    // Save the alt text as a file as well
+    if (uploadRes !== null && !isEmpty(alt)) {
+      await saveRecordText(env, data, alt!, `${imageName}.txt`);
+    }
     return uploadRes !== null;
   } else {
     console.warn(`unable to save blob from user ${data.username} got error "${bigBlobRush.statusText}"`);
