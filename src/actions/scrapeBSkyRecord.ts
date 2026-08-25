@@ -41,10 +41,6 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
     if (isFirstRecurse) {
       data.cid = bskyRawRecord.cid;
       data.uri = bskyRawRecord.uri;
-
-      // Save the post text
-      if (!isEmpty(bskyRecordJson.text))
-        await saveRecordText(env, data, bskyRecordJson.text);
     }
 
     let mediaType: string = bskyRecordJson.embed?.$type ?? "";
@@ -75,6 +71,10 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
           }
         }
       }
+      // Save the post text
+      if (isFirstRecurse && !isEmpty(bskyRecordJson.text))
+        await saveRecordText(env, data, bskyRecordJson.text);
+
     // Handle Galleries
     } else if (mediaType === "app.bsky.embed.gallery") {
       const imgSchema: AppBskyEmbedGallery.Main = (embedPoint as AppBskyEmbedGallery.Main);
@@ -97,6 +97,9 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
           }
         }
       }
+      // Save the post text
+      if (isFirstRecurse && !isEmpty(bskyRecordJson.text))
+        await saveRecordText(env, data, bskyRecordJson.text);
     // Copy any external thumbnails and save those too
     } else if (mediaType === "app.bsky.embed.external") {
       const externalData: AppBskyEmbedExternal.External = (embedPoint as AppBskyEmbedExternal.External);
@@ -108,6 +111,9 @@ export async function scrapeBSkyRecord(env: Env, data: BSkyRecordTask): Promise<
             break;
           }
         }
+        // Save the post text
+        if (isFirstRecurse && !isEmpty(bskyRecordJson.text))
+          await saveRecordText(env, data, bskyRecordJson.text);
       } else {
         console.warn(`${data.rkey} - Unable to get thumb data ${data.username}`);
         return ScrapeResult.Failed;
