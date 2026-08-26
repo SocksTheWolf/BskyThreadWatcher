@@ -54,7 +54,7 @@ region = "gcp:northamerica-northeast2-a"
 
 [vars]
 # If we want to disable the system
-ENABLED="true"
+ENABLED="false"
 
 # constrain yourself
 MAX_GALLERY_IMAGES=4
