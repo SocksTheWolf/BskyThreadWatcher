@@ -16,7 +16,7 @@
     "lint": "eslint"
   },
   "devDependencies": {
-    "@atcute/bluesky": "^4.0.18",
+    "@atcute/bluesky": "^4.0.19",
     "@types/node": "^24.13.3",
     "wrangler": "^4.127.1"
   },
