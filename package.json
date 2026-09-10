@@ -16,18 +16,18 @@
     "lint": "eslint"
   },
   "devDependencies": {
-    "@atcute/bluesky": "^4.0.18",
+    "@atcute/bluesky": "^4.0.20",
     "@types/node": "^24.13.3",
     "wrangler": "^4.130.0"
   },
   "dependencies": {
-    "@atproto/api": "^0.20.38",
+    "@atproto/api": "^0.20.42",
     "just-clone": "^6.2.0",
     "just-has": "^2.3.0",
     "just-is-empty": "^3.4.1",
     "mime": "^4.1.0",
     "minimal-discord-webhook-node": "^1.0.1",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.2"
   },
   "overrides": {
     "@actions/github": {
