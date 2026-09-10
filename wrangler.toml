@@ -1,4 +1,4 @@
-name = "onlyuppieswatcher"
+name = "bskythreadwatcher"
 main = "src/main.ts"
 compatibility_date = "2026-08-02"
 minify = true
@@ -11,7 +11,7 @@ send_metrics = false
 # mirror of file data, for easy download to populate a list
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "onlyuppies-overflow"
+bucket_name = "bsky-thread-bucket"
 
 # used for bookkeeping records, i.e. which posts we've seen
 [[kv_namespaces]]
@@ -54,7 +54,7 @@ region = "gcp:northamerica-northeast2-a"
 
 [vars]
 # If we want to disable the system
-ENABLED="false"
+ENABLED="true"
 
 # constrain yourself
 MAX_GALLERY_IMAGES=4
@@ -71,7 +71,7 @@ BSKY_USERNAME="socksthewolf.com"
 DEFAULT_PDS="https://bsky.social"
 
 # Custom user agent string
-USER_AGENT="OnlyUppies4Fetcher"
+USER_AGENT="BSkyThreadWatcher"
 
 # max scraping attempts, this should match whatever your queue.consumer.max_retries is set to
 MAX_SCRAPE_ATTEMPTS = "10"
@@ -82,5 +82,5 @@ MAX_DOWNLOAD_ATTEMPTS = "3"
 # target posts on atproto
 # use pdsls.dev to get this link (check info tab for one click copy)
 TARGET={"threads"=[
-  "at://did:plc:2vueglf2njr5gvdbaf75ih6a/app.bsky.feed.post/3mtwrt275322d"
+  "AT URL OF THREAD"
 ]}
