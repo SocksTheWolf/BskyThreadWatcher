@@ -27,7 +27,7 @@
     "just-is-empty": "^3.4.1",
     "mime": "^4.1.0",
     "minimal-discord-webhook-node": "^1.0.1",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.2"
   },
   "overrides": {
     "@actions/github": {
