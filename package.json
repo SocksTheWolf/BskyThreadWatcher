@@ -18,7 +18,7 @@
   "devDependencies": {
     "@atcute/bluesky": "^4.0.20",
     "@types/node": "^24.13.3",
-    "wrangler": "^4.148.0"
+    "wrangler": "^4.149.0"
   },
   "dependencies": {
     "@atproto/api": "^0.20.42",
@@ -35,9 +35,6 @@
     },
     "@actions/http-client": {
       "undici": "^7.29.1"
-    },
-    "miniflare": {
-      "sharp": "0.35.5"
     }
   },
   "optionalDependencies": {
