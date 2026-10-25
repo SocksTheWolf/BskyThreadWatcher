@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@atcute/bluesky": "^4.0.20",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.19.2",
     "wrangler": "^4.152.0"
   },
   "dependencies": {
