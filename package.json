@@ -21,13 +21,13 @@
     "wrangler": "^4.154.0"
   },
   "dependencies": {
-    "@atproto/api": "^0.20.42",
+    "@atproto/api": "^0.27.0",
     "just-clone": "^6.2.0",
     "just-has": "^2.3.0",
     "just-is-empty": "^3.4.1",
-    "mime": "^4.1.0",
+    "mime": "^4.1.1",
     "minimal-discord-webhook-node": "^1.0.1",
-    "uuid": "^14.0.2"
+    "uuid": "^14.0.3"
   },
   "overrides": {
     "@actions/github": {
