@@ -18,7 +18,7 @@
   "devDependencies": {
     "@atcute/bluesky": "^4.0.20",
     "@types/node": "^24.13.3",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.154.0"
   },
   "dependencies": {
     "@atproto/api": "^0.20.42",
@@ -45,6 +45,6 @@
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "jiti": "^2.7.0",
-    "typescript-eslint": "^8.72.0"
+    "typescript-eslint": "^8.72.1"
   }
 }
